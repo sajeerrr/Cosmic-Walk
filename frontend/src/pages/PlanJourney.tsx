@@ -99,7 +99,7 @@ export default function PlanJourney() {
           mode="calculation"
           originName={origin}
           destinationName={destination}
-          onComplete={() => { setIsCalculating(false); if (pendingResult) setTripResult(pendingResult); }}
+          onComplete={() => { setIsCalculating(false); if (pendingResult) { setTripResult(pendingResult); window.scrollTo({ top: 0, behavior: "instant" }); } }}
         />
       )}
 
@@ -107,7 +107,7 @@ export default function PlanJourney() {
 
         {/* ── Results view ── */}
         {tripResult ? (
-          <JourneyResults data={tripResult} onModifyParams={() => setTripResult(null)} />
+          <JourneyResults data={tripResult} onModifyParams={() => { setTripResult(null); window.scrollTo({ top: 0, behavior: "instant" }); }} />
         ) : (
           <>
             {/* ── Page header ── */}
