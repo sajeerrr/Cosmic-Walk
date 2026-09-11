@@ -26,7 +26,7 @@ function CameraIntro({ onComplete }: { onComplete: () => void }) {
   const DURATION = 2.4; // seconds for smooth intro
 
   const startPos = useMemo(() => new THREE.Vector3(7, 4, 9), []);
-  const endPos = useMemo(() => new THREE.Vector3(18, 14, 18), []);
+  const endPos = useMemo(() => new THREE.Vector3(13, 9, 13), []);
 
   useFrame((state) => {
     if (startTime.current === null) {
@@ -91,18 +91,15 @@ export default function SolarSystem({
 
   return (
     <div className={`canvas-container relative ${className}`}>
-      {/* HUD Telemetry Top Bar */}
-      <div className="absolute top-4 left-6 right-6 z-20 pointer-events-none flex items-center justify-between font-mono text-[0.65rem] tracking-widest text-text-tertiary">
-        <div className="flex items-center gap-2 bg-void/80 backdrop-blur-md px-3 py-1 border border-border rounded-xs">
+      {/* Route label — only shown when origin/destination provided */}
+      {(originName || destinationName) && (
+        <div className="absolute top-3 left-4 z-20 pointer-events-none flex items-center gap-2 bg-void/80 backdrop-blur-md px-3 py-1.5 border border-border rounded-xs font-mono text-[0.6rem] tracking-widest">
           <span className="w-1.5 h-1.5 rounded-full bg-amber animate-pulse" />
-          <span className="text-text-secondary">ORBITAL MAP // HELIOCENTRIC</span>
+          <span className="text-text-secondary">
+            {originName && destinationName ? `${originName} → ${destinationName}` : (originName || destinationName)}
+          </span>
         </div>
-        <div className="hidden sm:flex items-center gap-4 bg-void/80 backdrop-blur-md px-3 py-1 border border-border rounded-xs">
-          <span>SCALE: 1:1.496×10⁸ KM</span>
-          <span className="text-border-strong">|</span>
-          <span>VELOCITY BASELINE: 5 KM/H</span>
-        </div>
-      </div>
+      )}
 
       <Canvas
         camera={{
@@ -116,7 +113,7 @@ export default function SolarSystem({
           alpha: true,
           powerPreference: "high-performance",
         }}
-        style={{ background: "transparent" }}
+        style={{ width: "100%", height: "100%", background: "transparent" }}
       >
         <Suspense fallback={null}>
           {!introFinished && (

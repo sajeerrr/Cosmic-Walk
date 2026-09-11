@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import Badge from "../components/Badge";
 import Button from "../components/Button";
@@ -80,11 +80,20 @@ const TRANSPORT_MODES = [
 ];
 
 export default function PlanJourney() {
+  // ─── Pre-fill from hero booking card (if navigated from Landing) ───
+  const location = useLocation();
+  const navState = (location.state as {
+    origin?: string;
+    destination?: string;
+    travelDate?: string;
+    transportMode?: string;
+  } | null) ?? {};
+
   // ─── State ───
-  const [origin, setOrigin] = useState("Earth");
-  const [destination, setDestination] = useState("Mars");
-  const [travelDate, setTravelDate] = useState("2026-09-12");
-  const [transportMode, setTransportMode] = useState("WALKING");
+  const [origin, setOrigin] = useState(navState.origin ?? "Earth");
+  const [destination, setDestination] = useState(navState.destination ?? "Mars");
+  const [travelDate, setTravelDate] = useState(navState.travelDate ?? "2026-09-12");
+  const [transportMode, setTransportMode] = useState(navState.transportMode ?? "WALKING");
   const [passengerName, setPassengerName] = useState("Commander Arthur Dent");
   const [heightCm, setHeightCm] = useState("178");
   const [weightKg, setWeightKg] = useState("72");
@@ -96,7 +105,7 @@ export default function PlanJourney() {
   const [unlimitedFuel, setUnlimitedFuel] = useState(false);
   const [randomSeed, setRandomSeed] = useState<number | undefined>(undefined);
 
-  const [focusedPlanet, setFocusedPlanet] = useState<string>("Mars");
+  const [focusedPlanet, setFocusedPlanet] = useState<string>(navState.destination ?? "Mars");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [pendingResult, setPendingResult] = useState<TripCalculationResult | null>(null);

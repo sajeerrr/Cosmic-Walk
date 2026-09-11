@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
 /* ─── Design Tokens ─── */
@@ -5,36 +6,34 @@
   --color-void: #07070a;
   --color-void-light: #0d0e14;
   --color-void-lighter: #14151f;
-  --color-surface: #12131c;
-  --color-surface-raised: #181a26;
-  --color-border: rgba(255, 255, 255, 0.07);
-  --color-border-strong: rgba(255, 255, 255, 0.15);
+  --color-surface: #111116;
+  --color-surface-raised: #181820;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
 
   --color-amber: #d4a853;
   --color-amber-dim: #b8923f;
   --color-amber-glow: rgba(212, 168, 83, 0.15);
 
-  --color-text-primary: #eeece6;
-  --color-text-secondary: #929088;
-  --color-text-tertiary: #5e5c54;
+  --color-blue: #3b82f6;
+  --color-blue-dim: #2563eb;
+  --color-blue-glow: rgba(59, 130, 246, 0.18);
+
+  --color-text-primary: #f0eee8;
+  --color-text-secondary: #888580;
+  --color-text-tertiary: #4e4c46;
   --color-text-accent: #d4a853;
 
   --color-success: #4a9e6d;
   --color-warning: #c4793a;
   --color-danger: #b84a4a;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Orbitron", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
 }
 
-/* ─── Base Reset & Smooth Scroll ─── */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ─── Reset ─── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 html {
   font-size: 16px;
@@ -52,31 +51,15 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Selection ─── */
-::selection {
-  background-color: var(--color-amber);
-  color: var(--color-void);
-}
+::selection { background-color: var(--color-amber); color: var(--color-void); }
 
 /* ─── Scrollbar ─── */
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-void); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-amber); }
 
-::-webkit-scrollbar-track {
-  background: var(--color-void);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-amber);
-}
-
-/* ─── Typography & HUD Utilities ─── */
+/* ─── Typography ─── */
 .font-data {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -85,24 +68,20 @@ body {
 
 .text-label {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.6rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-secondary);
 }
 
-/* ─── Mission Control Reticle / Crosshair corners ─── */
-.hud-corner-tl {
-  position: relative;
-}
+/* ─── HUD corners ─── */
+.hud-corner-tl { position: relative; }
 .hud-corner-tl::before {
   content: "";
   position: absolute;
-  top: -1px;
-  left: -1px;
-  width: 8px;
-  height: 8px;
+  top: -1px; left: -1px;
+  width: 8px; height: 8px;
   border-top: 1.5px solid var(--color-amber);
   border-left: 1.5px solid var(--color-amber);
   pointer-events: none;
@@ -110,16 +89,14 @@ body {
 .hud-corner-tr::after {
   content: "";
   position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 8px;
-  height: 8px;
+  top: -1px; right: -1px;
+  width: 8px; height: 8px;
   border-top: 1.5px solid var(--color-amber);
   border-right: 1.5px solid var(--color-amber);
   pointer-events: none;
 }
 
-/* ─── Subtle grid background ─── */
+/* ─── Grid bg ─── */
 .bg-grid {
   background-image:
     linear-gradient(var(--color-border) 1px, transparent 1px),
@@ -128,33 +105,80 @@ body {
 }
 
 .bg-radial-gradient {
-  background: radial-gradient(circle at 50% 30%, rgba(212, 168, 83, 0.04) 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 30%, rgba(212,168,83,0.04) 0%, transparent 70%);
 }
 
-/* ─── Glow effect for accent elements ─── */
+/* ─── Glows ─── */
 .glow-amber {
-  box-shadow: 0 0 20px var(--color-amber-glow), 0 0 40px rgba(212, 168, 83, 0.05);
+  box-shadow: 0 0 20px var(--color-amber-glow), 0 0 40px rgba(212,168,83,0.05);
 }
 
-/* ─── Pulse Animation ─── */
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.92); }
-}
+/* ─── Animations ─── */
+@keyframes pulse-slow { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.92)} }
+.animate-pulse-slow { animation: pulse-slow 3s infinite ease-in-out; }
 
-.animate-pulse-slow {
-  animation: pulse-slow 3s infinite ease-in-out;
+@keyframes float-y { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.animate-float { animation: float-y 3s ease-in-out infinite; }
+
+@keyframes amber-glow-pulse {
+  0%,100% { text-shadow: 0 0 40px rgba(212,168,83,0.5), 0 0 80px rgba(212,168,83,0.2); }
+  50% { text-shadow: 0 0 60px rgba(212,168,83,0.8), 0 0 120px rgba(212,168,83,0.35); }
 }
+.animate-amber-glow { animation: amber-glow-pulse 3s ease-in-out infinite; }
 
 /* ─── Divider ─── */
-.divider {
-  height: 1px;
-  background: var(--color-border);
+.divider { height: 1px; background: var(--color-border); width: 100%; }
+
+/* ─── Canvas ─── */
+.canvas-container canvas { outline: none; }
+
+/* ─── Glass card (hero booking) ─── */
+.glass-card {
+  background: rgba(7, 7, 10, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+}
+
+/* ─── Glass select / input ─── */
+.glass-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  padding: 8px 32px 8px 10px;
   width: 100%;
-}
-
-/* ─── Canvas container ─── */
-.canvas-container canvas {
+  cursor: pointer;
   outline: none;
+  transition: border-color 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888580' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
 }
+.glass-select:focus { border-color: rgba(212,168,83,0.5); }
+.glass-select option { background: #111116; color: var(--color-text-primary); }
 
+.glass-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  padding: 8px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.glass-input:focus { border-color: rgba(212,168,83,0.5); }
+.glass-input::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+
+/* ─── Number spin removal ─── */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type="number"] { -moz-appearance: textfield; }
