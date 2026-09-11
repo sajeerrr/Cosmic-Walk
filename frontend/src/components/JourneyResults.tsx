@@ -1,7 +1,6 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import type { TripCalculationResult } from "../types/trip";
-import Badge from "./Badge";
-import Button from "./Button";
 import SolarSystem from "./solar-system/SolarSystem";
 import { formatDistance } from "../data/planets";
 
@@ -10,111 +9,48 @@ interface JourneyResultsProps {
   onModifyParams: () => void;
 }
 
+/* ─── shared style tokens ─── */
+const card: React.CSSProperties = {
+  borderRadius: 16,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.02)",
+  padding: "24px 28px",
+};
+
 export default function JourneyResults({ data, onModifyParams }: JourneyResultsProps) {
-  const downloadJsonManifest = () => {
-    const jsonStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `CosmicWalk_Manifest_${data.tripId}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const [booked, setBooked] = useState(false);
 
   return (
-    <div className="space-y-12 select-none">
-      {/* ─── Mission Report Header & Top Telemetry Bar ─── */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      style={{ display: "flex", flexDirection: "column", gap: 24 }}
+    >
+      {/* ══ 1 — 3D SOLAR SYSTEM (full width, top) ══ */}
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="p-6 sm:p-8 rounded-xs border border-border bg-surface/60 hud-corner-tl hud-corner-tr relative space-y-6"
+        transition={{ duration: 0.7, delay: 0.1 }}
+        style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "#030209", position: "relative" }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
-          <div>
-            <div className="flex items-center gap-2.5 mb-2">
-              <Badge variant="accent">[ MISSION MANIFEST: {data.tripId} ]</Badge>
-              <Badge variant="success">STATUS: CALCULATION_COMPLETE</Badge>
-              <Badge variant="default">MODE: {data.transportMode}</Badge>
-            </div>
-            <h1 className="font-mono text-2xl sm:text-4xl font-bold tracking-tight text-text-primary">
-              {data.origin} → {data.destination}
-            </h1>
-            <p className="text-text-tertiary font-mono text-xs sm:text-sm mt-1">
-              Passenger: <span className="text-text-secondary font-semibold">{data.passenger.name}</span> ({data.passenger.age} yrs, {data.passenger.heightCm}cm, {data.passenger.weightKg}kg)
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" size="sm" onClick={onModifyParams}>
-              ← Edit Parameters
-            </Button>
-            <Button size="sm" onClick={downloadJsonManifest}>
-              Export Payload (.json)
-            </Button>
-          </div>
+        {/* Trajectory label */}
+        <div style={{ position: "absolute", top: 16, left: 16, zIndex: 20, pointerEvents: "none", display: "flex", alignItems: "center", gap: 8, background: "rgba(3,2,9,0.8)", backdropFilter: "blur(10px)", padding: "6px 14px", borderRadius: 8, border: "1px solid rgba(212,168,83,0.2)" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#d4a853", display: "inline-block", animation: "pulse-slow 2s infinite", boxShadow: "0 0 6px rgba(212,168,83,0.8)" }} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "#d4a853" }}>
+            {data.origin} ──► {data.destination}
+          </span>
         </div>
 
-        {/* ─── Hero Key Metrics Grid ─── */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <MetricCell label="Total Distance" value={formatDistance(data.metrics.distanceKm)} tag="01.DIST" />
-          <MetricCell label="Estimated Steps" value={`${(data.metrics.estimatedSteps / 1_000_000).toFixed(1)}M`} detail={`${data.metrics.estimatedSteps.toLocaleString()} steps`} tag="02.STEPS" />
-          <MetricCell label="Walking Duration" value={`${data.metrics.walkingDurationYears} Yrs`} detail={`${data.metrics.walkingDurationDays.toLocaleString()} Days`} tag="03.TIME" accent />
-          <MetricCell label="Daily Pace" value={`${(data.metrics.dailySteps / 1000).toFixed(0)}k`} detail="Steps per 24h" tag="04.PACE" />
-          <MetricCell label="Difficulty" value={data.metrics.difficulty} tag="05.DIFF" danger={data.metrics.difficulty === "Existential"} />
-          <MetricCell label="Survival Probability" value={`${data.metrics.survivalProbabilityPercent}%`} detail="Vacuum adjusted" tag="06.SURVIVAL" />
-        </div>
-
-        {/* ─── Mission Verdict Banner ─── */}
-        {data.verdict && (
-          <div className="pt-4 border-t border-border">
-            <div className="p-4 rounded-xs border border-amber/50 bg-amber/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-mono">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Badge variant="accent">VERDICT: {data.verdict.classification}</Badge>
-                  <span className="text-amber font-bold text-sm">[{data.verdict.score}/100 SCORE]</span>
-                </div>
-                <h3 className="text-lg font-bold text-text-primary">{data.verdict.title}</h3>
-                <p className="text-xs text-text-secondary leading-relaxed">{data.verdict.summary}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ─── Scale Comparisons Grid ─── */}
-        {data.scale_comparison && data.scale_comparison.length > 0 && (
-          <div className="pt-4 border-t border-border space-y-3 font-mono">
-            <span className="text-label block text-xs text-amber font-bold">ASTRONOMICAL SCALE COMPARISONS</span>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {data.scale_comparison.map((item, idx) => (
-                <div key={idx} className="p-3 border border-border rounded-xs bg-void/40 space-y-1">
-                  <div className="text-[0.6rem] text-text-tertiary uppercase">{item.label}</div>
-                  <div className="text-sm font-bold text-text-primary">{item.formatted_value}</div>
-                  <div className="text-[0.65rem] text-amber">{item.unit}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </motion.div>
-
-
-      {/* ─── 3D Mission Trajectory Map Section ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        viewport={{ once: true }}
-        className="border border-border rounded-xs bg-void overflow-hidden relative shadow-2xl"
-      >
-        <div className="absolute top-4 left-6 z-20 pointer-events-none font-mono text-[0.65rem] tracking-widest text-text-tertiary flex items-center gap-2 bg-void/80 backdrop-blur-md px-3 py-1.5 border border-border rounded-xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber animate-pulse" />
-          <span>CELESTIAL TRAJECTORY VECTOR // {data.origin} ──► {data.destination}</span>
+        {/* Trip ID badge */}
+        <div style={{ position: "absolute", top: 16, right: 16, zIndex: 20, pointerEvents: "none", background: "rgba(3,2,9,0.8)", backdropFilter: "blur(10px)", padding: "6px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.1em", color: "rgba(240,238,232,0.3)" }}>
+            ID: {data.tripId}
+          </span>
         </div>
 
         <SolarSystem
-          className="w-full h-[450px]"
+          className="w-full h-[420px]"
           highlightedPlanets={[data.origin, data.destination]}
           originName={data.origin}
           destinationName={data.destination}
@@ -122,250 +58,216 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
         />
       </motion.div>
 
-      {/* ─── Resource Dashboard Section ─── */}
+      {/* ══ 2 — ROUTE HEADER ══ */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        viewport={{ once: true }}
-        className="p-6 sm:p-8 rounded-xs border border-border bg-surface/40 space-y-6"
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.25 }}
+        style={{ ...card }}
       >
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-amber inline-block" />
-            <h2 className="font-mono text-xl font-bold tracking-tight text-text-primary">
-              RESOURCE CONSUMPTION DASHBOARD
-            </h2>
+        {/* Origin → Destination */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: "var(--font-sans)", fontWeight: 800, fontSize: "clamp(1.4rem, 3vw, 2.2rem)", color: "#f0eee8", lineHeight: 1 }}>{data.origin}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", color: "rgba(240,238,232,0.35)", marginTop: 4, textTransform: "uppercase" }}>Origin</div>
           </div>
-          <Badge variant="accent">[ LOGISTICAL REQUIREMENTS ]</Badge>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <ResourceCard
-            icon="👟"
-            label="Shoes Required"
-            value={`${data.resources.shoesRequiredPairs.toLocaleString()} Pairs`}
-            subtext="Based on 1.5M steps per sole abrasion limit."
-            progressPercent={Math.min(100, (data.resources.shoesRequiredPairs / 200000) * 100)}
-          />
-          <ResourceCard
-            icon="🥫"
-            label="Food Calories"
-            value={`${(data.resources.foodKcalTotal / 1_000_000_000).toFixed(2)}B kcal`}
-            subtext={`2,500 kcal/day × ${data.metrics.walkingDurationDays.toLocaleString()} days.`}
-            progressPercent={85}
-          />
-          <ResourceCard
-            icon="💧"
-            label="Water Required"
-            value={`${(data.resources.waterLitersTotal / 1_000_000).toFixed(2)}M Liters`}
-            subtext="3.5 Liters daily hydration allocation."
-            progressPercent={70}
-          />
-          <ResourceCard
-            icon="🦺"
-            label="Oxygen Tanks"
-            value={`${(data.resources.oxygenTanksTotal / 1_000_000).toFixed(2)}M Tanks`}
-            subtext="Standard pressurized breathable O₂ tanks."
-            progressPercent={92}
-          />
-          <ResourceCard
-            icon="🏋️"
-            label="Equipment Mass"
-            value={`${data.resources.equipmentWeightKg} kg`}
-            subtext="Pressurized suit, repair tools, supplies."
-            progressPercent={45}
-          />
-          <ResourceCard
-            icon="📦"
-            label="Emergency Packs"
-            value={`${data.resources.emergencyPacks.toLocaleString()} Packs`}
-            subtext="First aid, hull patches, radio beacons."
-            progressPercent={60}
-          />
-        </div>
-      </motion.div>
-
-      {/* ─── Visual Journey Timeline Section ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        viewport={{ once: true }}
-        className="p-6 sm:p-8 rounded-xs border border-border bg-surface/40 space-y-6"
-      >
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-amber inline-block" />
-            <h2 className="font-mono text-xl font-bold tracking-tight text-text-primary">
-              MISSION TIMELINE & EPOCH MILESTONES
-            </h2>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 80 }}>
+            <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 6 }}>
+              <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(212,168,83,0.4), rgba(212,168,83,0.1))" }} />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4a853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+              <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(212,168,83,0.1), rgba(212,168,83,0.4))" }} />
+            </div>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.58rem", letterSpacing: "0.08em", color: "rgba(240,238,232,0.3)", textTransform: "uppercase" }}>
+              {data.transportMode.replace(/_/g, " ")}
+            </span>
           </div>
-          <Badge variant="default">DURATION: {data.metrics.walkingDurationYears} YEARS</Badge>
+
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: "var(--font-sans)", fontWeight: 800, fontSize: "clamp(1.4rem, 3vw, 2.2rem)", color: "#d4a853", lineHeight: 1 }}>{data.destination}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", color: "rgba(240,238,232,0.35)", marginTop: 4, textTransform: "uppercase" }}>Destination</div>
+          </div>
         </div>
 
-        {/* Milestone Node Pipeline */}
-        <div className="space-y-4 pt-2">
-          {data.timeline.map((item, idx) => (
-            <div key={idx} className="flex items-start gap-4 font-mono text-xs p-4 rounded-xs border border-border bg-void/40">
-              <div className="w-12 text-amber font-bold text-sm shrink-0 pt-0.5">
-                {item.percentage}%
-              </div>
-              <div className="w-28 text-text-tertiary shrink-0 pt-0.5">
-                {item.elapsedYears === 0 ? "Year 0" : `+${item.elapsedYears} Yrs`}
-              </div>
-              <div className="flex-1 space-y-1">
-                <div className="text-text-primary font-semibold tracking-wide">
-                  {item.label}
-                </div>
-                <div className="text-text-secondary text-[0.75rem] leading-relaxed">
-                  {item.description}
-                </div>
-              </div>
+        {/* Passenger & Date row */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 24, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          {[
+            { label: "Passenger",  value: data.passenger.name },
+            { label: "Departure",  value: data.departureDate },
+            { label: "Age",        value: `${data.passenger.age} yrs` },
+          ].map((f) => (
+            <div key={f.label}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.1em", color: "rgba(240,238,232,0.3)", textTransform: "uppercase", marginBottom: 4 }}>{f.label}</div>
+              <div style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.85rem", color: "#f0eee8" }}>{f.value}</div>
             </div>
           ))}
         </div>
       </motion.div>
 
-      {/* ─── AI Generated Mission Report Card Section ─── */}
+      {/* ══ 3 — KEY STATS ══ */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        viewport={{ once: true }}
-        className="p-6 sm:p-8 rounded-xs border border-amber/40 bg-amber/[0.03] space-y-6 hud-corner-tl"
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.35 }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 }}
       >
-        <div className="flex items-center justify-between border-b border-amber/30 pb-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-amber inline-block animate-pulse" />
-            <h2 className="font-mono text-xl font-bold tracking-tight text-amber">
-              AI-GENERATED MISSION REPORT
-            </h2>
+        {[
+          { label: "Total Distance",      value: formatDistance(data.metrics.distanceKm),                              accent: false },
+          { label: "Journey Duration",    value: `${data.metrics.walkingDurationYears} yrs`,                           accent: true  },
+          { label: "Total Steps",         value: `${(data.metrics.estimatedSteps / 1_000_000).toFixed(1)}M`,           accent: false },
+          { label: "Difficulty",          value: data.metrics.difficulty,                                               danger: data.metrics.difficulty === "Existential" || data.metrics.difficulty === "Impossible" },
+          { label: "Survival Chance",     value: `${data.metrics.survivalProbabilityPercent}%`,                        accent: false },
+          { label: "Verdict",             value: data.verdict?.classification ?? "—",                                  accent: true  },
+        ].map((s) => (
+          <div key={s.label} style={{ ...card, padding: "16px 18px" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,238,232,0.3)", marginBottom: 8 }}>{s.label}</div>
+            <div style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "1rem", color: (s as any).danger ? "#f87171" : (s as any).accent ? "#d4a853" : "#f0eee8", lineHeight: 1.2 }}>{s.value}</div>
           </div>
-          <Badge variant="accent">[ ENGINE COMPUTED ]</Badge>
+        ))}
+      </motion.div>
+
+      {/* ══ 4 — MISSION VERDICT ══ */}
+      {data.verdict && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          style={{ ...card, border: "1px solid rgba(212,168,83,0.3)", background: "rgba(212,168,83,0.04)" }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "#d4a853", background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.3)", padding: "3px 10px", borderRadius: 99 }}>
+              Mission Verdict
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "#d4a853", fontWeight: 700 }}>[{data.verdict.score}/100]</span>
+          </div>
+          <h3 style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "1.05rem", color: "#f0eee8", marginBottom: 8 }}>{data.verdict.title}</h3>
+          <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "rgba(240,238,232,0.55)", lineHeight: 1.65 }}>{data.verdict.summary}</p>
+        </motion.div>
+      )}
+
+      {/* ══ 5 — AI MISSION REPORT ══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.45 }}
+        style={{ ...card }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22, paddingBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#d4a853", display: "inline-block", animation: "pulse-slow 2s infinite" }} />
+          <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.9rem", color: "#f0eee8" }}>AI Mission Report</span>
         </div>
 
-        <div className="space-y-6 font-mono text-xs">
-          {/* Mission Summary */}
-          <div>
-            <span className="text-label block text-amber mb-1.5">Mission Summary</span>
-            <p className="text-text-primary text-sm leading-relaxed font-light">
-              {data.aiReport.missionSummary}
-            </p>
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Summary */}
+          <ReportSection label="Mission Summary">
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", color: "rgba(240,238,232,0.65)", lineHeight: 1.7 }}>{data.aiReport.missionSummary}</p>
+          </ReportSection>
 
-          {/* Major Challenges */}
-          <div>
-            <span className="text-label block text-amber mb-2">Major Astrodynamic Challenges</span>
-            <ul className="space-y-1.5 text-text-secondary list-disc list-inside pl-1">
+          {/* Challenges */}
+          <ReportSection label="Key Challenges">
+            <ul style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
               {data.aiReport.majorChallenges.map((c, i) => (
-                <li key={i} className="leading-relaxed">{c}</li>
+                <li key={i} style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "rgba(240,238,232,0.55)", lineHeight: 1.6 }}>{c}</li>
               ))}
             </ul>
-          </div>
+          </ReportSection>
 
-          {/* Personalized Recommendations */}
-          <div>
-            <span className="text-label block text-amber mb-2">Personalized Recommendations</span>
-            <ul className="space-y-1.5 text-text-secondary list-disc list-inside pl-1">
+          {/* Recommendations */}
+          <ReportSection label="Recommendations">
+            <ul style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
               {data.aiReport.personalizedRecommendations.map((r, i) => (
-                <li key={i} className="leading-relaxed">{r}</li>
+                <li key={i} style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "rgba(240,238,232,0.55)", lineHeight: 1.6 }}>{r}</li>
               ))}
             </ul>
-          </div>
+          </ReportSection>
 
-          {/* Humorous Observations */}
-          <div>
-            <span className="text-label block text-amber mb-2">Humorous Mission Observations</span>
-            <ul className="space-y-1.5 text-text-tertiary list-disc list-inside pl-1 italic">
-              {data.aiReport.humorousObservations.map((h, i) => (
-                <li key={i} className="leading-relaxed">{h}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Final Travel Verdict */}
-          <div className="pt-4 border-t border-amber/20">
-            <span className="text-label block text-amber mb-1">Final Travel Verdict</span>
-            <div className="p-4 rounded-xs border border-amber/50 bg-amber/10 font-bold text-amber text-sm tracking-wide">
-              {data.aiReport.finalVerdict}
+          {/* Final verdict */}
+          <div style={{ paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#d4a853", marginBottom: 10 }}>Final Verdict</div>
+            <div style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.85rem", color: "#f0eee8", lineHeight: 1.6, padding: "14px 18px", borderRadius: 10, border: "1px solid rgba(212,168,83,0.25)", background: "rgba(212,168,83,0.05)", fontStyle: "italic" }}>
+              "{data.aiReport.finalVerdict}"
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* ─── Bottom Actions ─── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 font-mono">
-        <Button variant="outline" onClick={onModifyParams}>
-          ← Modify Parameters & Re-Calculate
-        </Button>
-        <Button onClick={downloadJsonManifest}>
-          Export Full API Result (.json)
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Sub-Components ─── */
-
-function MetricCell({
-  label,
-  value,
-  detail,
-  tag,
-  accent = false,
-  danger = false,
-}: {
-  label: string;
-  value: string;
-  detail?: string;
-  tag: string;
-  accent?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <div className="p-3.5 rounded-xs border border-border bg-void/50 flex flex-col justify-between font-mono">
-      <div className="text-[0.6rem] text-text-tertiary tracking-widest mb-1">{tag}</div>
-      <div className="text-label text-[0.65rem] mb-1">{label}</div>
-      <div
-        className={`text-base sm:text-lg font-bold tracking-tight ${
-          danger ? "text-danger" : accent ? "text-amber" : "text-text-primary"
-        }`}
+      {/* ══ 6 — BOOK NOW CTA ══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.55 }}
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "32px 0 8px" }}
       >
-        {value}
-      </div>
-      {detail && <div className="text-[0.6rem] text-text-tertiary mt-0.5">{detail}</div>}
-    </div>
+        {booked ? (
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            style={{ textAlign: "center" }}
+          >
+            <div style={{ fontFamily: "var(--font-sans)", fontWeight: 800, fontSize: "1.4rem", color: "#d4a853", marginBottom: 8 }}>🚀 Booking Confirmed!</div>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", color: "rgba(240,238,232,0.45)", lineHeight: 1.6, maxWidth: 400 }}>
+              Your interplanetary journey from <strong style={{ color: "#f0eee8" }}>{data.origin}</strong> to <strong style={{ color: "#d4a853" }}>{data.destination}</strong> has been registered. Prepare for departure on {data.departureDate}.
+            </p>
+          </motion.div>
+        ) : (
+          <>
+            <button
+              id="btn-book-now"
+              onClick={() => setBooked(true)}
+              style={{
+                padding: "16px 56px",
+                borderRadius: 14,
+                background: "#d4a853",
+                color: "#07060e",
+                fontFamily: "var(--font-sans)",
+                fontWeight: 800,
+                fontSize: "0.95rem",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 0 40px rgba(212,168,83,0.5), 0 6px 24px rgba(0,0,0,0.5)",
+                transition: "opacity 0.2s, transform 0.15s, box-shadow 0.2s",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.opacity = "0.88"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 0 60px rgba(212,168,83,0.65), 0 10px 32px rgba(0,0,0,0.5)"; }}
+              onMouseOut={(e)  => { e.currentTarget.style.opacity = "1";    e.currentTarget.style.transform = "translateY(0)";   e.currentTarget.style.boxShadow = "0 0 40px rgba(212,168,83,0.5), 0 6px 24px rgba(0,0,0,0.5)"; }}
+            >
+              Book Now
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", color: "rgba(240,238,232,0.25)", letterSpacing: "0.02em" }}>
+              {data.origin} → {data.destination} · Departing {data.departureDate}
+            </p>
+          </>
+        )}
+
+        {/* Edit params ghost button */}
+        <button
+          onClick={onModifyParams}
+          style={{ marginTop: 4, padding: "10px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,238,232,0.4)", fontFamily: "var(--font-sans)", fontWeight: 500, fontSize: "0.75rem", letterSpacing: "0.04em", cursor: "pointer", transition: "border-color 0.2s, color 0.2s" }}
+          onMouseOver={(e) => { e.currentTarget.style.borderColor = "rgba(212,168,83,0.3)"; e.currentTarget.style.color = "#d4a853"; }}
+          onMouseOut={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(240,238,232,0.4)"; }}
+        >
+          ← Edit Journey Parameters
+        </button>
+      </motion.div>
+    </motion.div>
   );
 }
 
-function ResourceCard({
-  icon,
-  label,
-  value,
-  subtext,
-  progressPercent,
-}: {
-  icon: string;
-  label: string;
-  value: string;
-  subtext: string;
-  progressPercent: number;
-}) {
+/* ─── Helpers ─── */
+function ReportSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="p-4 rounded-xs border border-border bg-void/40 font-mono space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-2xl">{icon}</span>
-        <span className="text-label text-[0.6rem]">{label}</span>
-      </div>
-      <div>
-        <div className="text-lg font-bold text-text-primary tracking-tight">{value}</div>
-        <div className="text-[0.65rem] text-text-tertiary mt-0.5">{subtext}</div>
-      </div>
-      <div className="w-full h-1 bg-surface rounded-xs overflow-hidden border border-border">
-        <div className="h-full bg-amber" style={{ width: `${progressPercent}%` }} />
-      </div>
+    <div>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#d4a853", marginBottom: 10 }}>{label}</div>
+      {children}
     </div>
   );
 }
