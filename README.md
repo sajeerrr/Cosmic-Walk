@@ -6,7 +6,7 @@
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: Omega
 
 
 ### Team Members
