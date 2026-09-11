@@ -69,8 +69,8 @@ export default function LoadingScreen({
     if (!isSimulated || externalProgress !== undefined) return;
 
     if (mode === "initial") {
-      // 4.0 seconds total sequence
-      const totalDuration = 4000;
+      // 6.5 seconds total sequence for comfortable reading speed
+      const totalDuration = 6500;
       const intervalMs = 50;
       const step = 100 / (totalDuration / intervalMs);
 
@@ -90,8 +90,8 @@ export default function LoadingScreen({
 
       return () => clearInterval(interval);
     } else {
-      // Calculation mode sequence ~5.0 seconds
-      const totalDuration = 5000;
+      // Calculation mode sequence ~6.5 seconds
+      const totalDuration = 6500;
       const intervalMs = 50;
       const step = 100 / (totalDuration / intervalMs);
 

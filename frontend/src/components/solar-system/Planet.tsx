@@ -8,12 +8,16 @@ interface PlanetProps {
   data: PlanetData;
   showLabel?: boolean;
   highlighted?: boolean;
+  roleTag?: string;
+  onSelect?: (name: string) => void;
 }
 
 export default function Planet({
   data,
   showLabel = true,
   highlighted = false,
+  roleTag,
+  onSelect,
 }: PlanetProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
@@ -35,7 +39,20 @@ export default function Planet({
   return (
     <group ref={groupRef}>
       {/* Planet sphere */}
-      <mesh ref={meshRef}>
+      <mesh
+        ref={meshRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onSelect) onSelect(data.name);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "auto";
+        }}
+      >
         <sphereGeometry args={[data.radius, 24, 24]} />
         <meshStandardMaterial
           color={data.color}
@@ -96,7 +113,7 @@ export default function Planet({
                 `}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                <span>{isEarth ? "[ ORIGIN ]" : isMars ? "[ TARGET ]" : "[ WAYPOINT ]"}</span>
+                <span>{roleTag || (isEarth ? "[ ORIGIN ]" : isMars ? "[ TARGET ]" : "[ WAYPOINT ]")}</span>
                 <span>{data.name}</span>
               </div>
               <div className="w-px h-2 bg-current opacity-40 mt-0.5" />

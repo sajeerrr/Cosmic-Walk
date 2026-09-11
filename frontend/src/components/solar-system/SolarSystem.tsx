@@ -11,6 +11,10 @@ import { PLANETS } from "../../data/planets";
 interface SolarSystemProps {
   className?: string;
   highlightedPlanets?: string[];
+  focusedPlanetName?: string;
+  onSelectPlanet?: (name: string) => void;
+  originName?: string;
+  destinationName?: string;
 }
 
 function CameraIntro({ onComplete }: { onComplete: () => void }) {
@@ -42,9 +46,42 @@ function CameraIntro({ onComplete }: { onComplete: () => void }) {
   return null;
 }
 
+function CameraFocusController({ focusedPlanetName }: { focusedPlanetName?: string }) {
+  const { camera } = useThree();
+  const prevFocused = useRef<string | undefined>(undefined);
+  const targetVec = useRef<THREE.Vector3 | null>(null);
+
+  useFrame((state) => {
+    if (!focusedPlanetName) return;
+    const planetData = PLANETS.find((p) => p.name === focusedPlanetName);
+    if (!planetData) return;
+
+    const t = state.clock.elapsedTime * planetData.orbitSpeed + planetData.orbitOffset;
+    const px = Math.cos(t) * planetData.orbitRadius;
+    const pz = Math.sin(t) * planetData.orbitRadius;
+    const planetPos = new THREE.Vector3(px, 0, pz);
+
+    if (prevFocused.current !== focusedPlanetName) {
+      prevFocused.current = focusedPlanetName;
+      targetVec.current = new THREE.Vector3(px + 4, 3, pz + 4);
+    }
+
+    if (targetVec.current) {
+      camera.position.lerp(targetVec.current, 0.05);
+      camera.lookAt(planetPos);
+    }
+  });
+
+  return null;
+}
+
 export default function SolarSystem({
   className = "",
   highlightedPlanets = [],
+  focusedPlanetName,
+  onSelectPlanet,
+  originName,
+  destinationName,
 }: SolarSystemProps) {
   const [introFinished, setIntroFinished] = useState(false);
 
@@ -82,6 +119,10 @@ export default function SolarSystem({
             <CameraIntro onComplete={() => setIntroFinished(true)} />
           )}
 
+          {introFinished && focusedPlanetName && (
+            <CameraFocusController focusedPlanetName={focusedPlanetName} />
+          )}
+
           {/* Ambient light for minimum visibility */}
           <ambientLight intensity={0.12} color="#334466" />
 
@@ -89,25 +130,34 @@ export default function SolarSystem({
           <Sun />
 
           {/* Planets with orbits */}
-          {PLANETS.map((planet) => (
-            <group key={planet.name}>
-              <OrbitRing
-                radius={planet.orbitRadius}
-                opacity={highlightedPlanets.includes(planet.name) ? 0.25 : 0.07}
-              />
-              <Planet
-                data={planet}
-                highlighted={highlightedPlanets.includes(planet.name)}
-              />
-            </group>
-          ))}
+          {PLANETS.map((planet) => {
+            const isHighlighted = highlightedPlanets.includes(planet.name) || planet.name === focusedPlanetName;
+            let roleTag: string | undefined = undefined;
+            if (planet.name === originName) roleTag = "[ ORIGIN ]";
+            else if (planet.name === destinationName) roleTag = "[ DESTINATION ]";
+
+            return (
+              <group key={planet.name}>
+                <OrbitRing
+                  radius={planet.orbitRadius}
+                  opacity={isHighlighted ? 0.25 : 0.07}
+                />
+                <Planet
+                  data={planet}
+                  highlighted={isHighlighted}
+                  roleTag={roleTag}
+                  onSelect={onSelectPlanet}
+                />
+              </group>
+            );
+          })}
 
           {/* Starfield */}
           <Starfield />
 
           {/* Controls */}
           <OrbitControls
-            enabled={introFinished}
+            enabled={introFinished && !focusedPlanetName}
             enablePan={false}
             enableDamping
             dampingFactor={0.05}
@@ -115,7 +165,7 @@ export default function SolarSystem({
             maxDistance={50}
             maxPolarAngle={Math.PI / 1.8}
             minPolarAngle={0.15}
-            autoRotate={introFinished}
+            autoRotate={introFinished && !focusedPlanetName}
             autoRotateSpeed={0.18}
           />
         </Suspense>
@@ -123,4 +173,5 @@ export default function SolarSystem({
     </div>
   );
 }
+
 

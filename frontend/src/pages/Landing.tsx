@@ -47,26 +47,28 @@ export default function Landing() {
           </motion.div>
 
           {/* Main Headline & Subtitle */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="lg:col-span-8"
+              className="lg:col-span-8 space-y-4"
             >
-              <h1 className="font-mono text-[clamp(2.75rem,7vw,5.5rem)] font-bold tracking-tight leading-[1.02] text-text-primary mb-4 select-none">
+              <h1 className="font-mono text-[clamp(2.5rem,5.5vw,4.75rem)] font-bold tracking-tight leading-[1.05] text-text-primary select-none">
                 COSMIC<span className="text-amber">WALK</span>
               </h1>
-              <p className="font-mono text-xs sm:text-sm tracking-[0.2em] uppercase text-text-secondary mb-4 flex items-center gap-2">
-                <span className="w-2 h-px bg-amber inline-block" />
+              <p className="font-mono text-xs sm:text-sm tracking-[0.2em] uppercase text-text-secondary flex items-center gap-2.5">
+                <span className="w-2.5 h-px bg-amber inline-block" />
                 Interplanetary Walking Route Planner
               </p>
-              <p className="text-text-primary text-lg sm:text-xl font-light leading-relaxed max-w-2xl mb-2">
-                Mission planning for journeys nobody requested.
-              </p>
-              <p className="text-text-tertiary text-xs sm:text-sm font-mono leading-relaxed">
-                All calculations are serious. The journey is not.
-              </p>
+              <div className="space-y-1.5 pt-1">
+                <p className="text-text-primary text-xl sm:text-2xl font-light leading-snug max-w-xl">
+                  Mission planning for journeys nobody requested.
+                </p>
+                <p className="text-text-tertiary text-xs sm:text-sm font-mono leading-relaxed tracking-wide">
+                  All calculations are serious. The journey is not.
+                </p>
+              </div>
             </motion.div>
 
             {/* CTAs */}
@@ -77,7 +79,7 @@ export default function Landing() {
               className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col items-stretch lg:items-end gap-3"
             >
               <Button size="lg" className="w-full sm:w-auto" onClick={() => navigate("/plan")}>
-                Plan a Journey
+                Configure Journey
                 <span className="text-void/70 group-hover:translate-x-1 transition-transform font-mono">→</span>
               </Button>
               <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={scrollToSolarSystem}>
