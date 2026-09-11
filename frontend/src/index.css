@@ -2,21 +2,21 @@
 
 /* ─── Design Tokens ─── */
 @theme {
-  --color-void: #0a0a0f;
-  --color-void-light: #12121a;
-  --color-void-lighter: #1a1a24;
-  --color-surface: #16161e;
-  --color-surface-raised: #1e1e28;
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-strong: rgba(255, 255, 255, 0.12);
+  --color-void: #07070a;
+  --color-void-light: #0d0e14;
+  --color-void-lighter: #14151f;
+  --color-surface: #12131c;
+  --color-surface-raised: #181a26;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-strong: rgba(255, 255, 255, 0.15);
 
   --color-amber: #d4a853;
   --color-amber-dim: #b8923f;
   --color-amber-glow: rgba(212, 168, 83, 0.15);
 
-  --color-text-primary: #e8e6e1;
-  --color-text-secondary: #8a8880;
-  --color-text-tertiary: #5a5850;
+  --color-text-primary: #eeece6;
+  --color-text-secondary: #929088;
+  --color-text-tertiary: #5e5c54;
   --color-text-accent: #d4a853;
 
   --color-success: #4a9e6d;
@@ -27,7 +27,7 @@
   --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
 }
 
-/* ─── Base Reset ─── */
+/* ─── Base Reset & Smooth Scroll ─── */
 *,
 *::before,
 *::after {
@@ -38,6 +38,7 @@
 
 html {
   font-size: 16px;
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -67,15 +68,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-text-tertiary);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
+  background: var(--color-amber);
 }
 
-/* ─── Typography Utilities ─── */
+/* ─── Typography & HUD Utilities ─── */
 .font-data {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -86,9 +87,36 @@ body {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+}
+
+/* ─── Mission Control Reticle / Crosshair corners ─── */
+.hud-corner-tl {
+  position: relative;
+}
+.hud-corner-tl::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 8px;
+  height: 8px;
+  border-top: 1.5px solid var(--color-amber);
+  border-left: 1.5px solid var(--color-amber);
+  pointer-events: none;
+}
+.hud-corner-tr::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-top: 1.5px solid var(--color-amber);
+  border-right: 1.5px solid var(--color-amber);
+  pointer-events: none;
 }
 
 /* ─── Subtle grid background ─── */
@@ -96,12 +124,26 @@ body {
   background-image:
     linear-gradient(var(--color-border) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
-  background-size: 64px 64px;
+  background-size: 48px 48px;
+}
+
+.bg-radial-gradient {
+  background: radial-gradient(circle at 50% 30%, rgba(212, 168, 83, 0.04) 0%, transparent 70%);
 }
 
 /* ─── Glow effect for accent elements ─── */
 .glow-amber {
   box-shadow: 0 0 20px var(--color-amber-glow), 0 0 40px rgba(212, 168, 83, 0.05);
+}
+
+/* ─── Pulse Animation ─── */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.92); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite ease-in-out;
 }
 
 /* ─── Divider ─── */
@@ -115,3 +157,4 @@ body {
 .canvas-container canvas {
   outline: none;
 }
+
