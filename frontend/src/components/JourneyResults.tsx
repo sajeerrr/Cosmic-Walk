@@ -68,7 +68,7 @@ function pill(text: string, color: string): React.ReactNode {
 
 // ─── Section wrapper ───────────────────────────────────────────────────────────
 function Section({ title, children, amberBorder = false, delay = 0 }: {
-  title?: string; children: React.ReactNode; amberBorder?: boolean; delay?: number;
+  title?: React.ReactNode; children: React.ReactNode; amberBorder?: boolean; delay?: number;
 }) {
   return (
     <motion.div
@@ -261,6 +261,109 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
           showTrajectory={true}
         />
       </motion.div>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          NEW ABSURDITY CARDS (Right after 3D Solar System)
+      ══════════════════════════════════════════════════════════════════ */}
+
+      {/* 1. Cosmic Travel Insurance & 3. Cosmic Visa / Passport */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+        {/* Insurance */}
+        <Section title={<>1. Cosmic Travel <span style={{ color: "#d4a853", textShadow: "0 0 10px rgba(212,168,83,0.4)" }}>INSURANCE</span></>} amberBorder delay={0.08}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: TXT3, letterSpacing: "0.1em" }}>INSURANCE STATUS</span>
+              {pill(
+                m.walkingDurationYears > 100 ? "DENIED" : data.transportMode.toLowerCase().includes("teleport") ? "UNDER REVIEW" : "VOID",
+                m.walkingDurationYears > 100 ? "#f87171" : "#fb923c"
+              )}
+            </div>
+            <div style={{ padding: "14px 16px", background: "rgba(239, 68, 68, 0.05)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: 12 }}>
+              <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: "#f87171", marginBottom: 6, letterSpacing: "0.08em" }}>OFFICIAL DENIAL / STATUS REASON</div>
+              <p style={{ fontFamily: SANS, fontSize: "0.82rem", color: TXT, lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>
+                "{ai.fictionalInsurance || (data.transportMode.toLowerCase().includes("teleport")
+                  ? "We have never insured a person who might arrive in multiple pieces."
+                  : data.transportMode.toLowerCase().includes("wormhole")
+                  ? "The destination technically exists, but our lawyers don't understand the route."
+                  : `Policy maximum is 90 days. Your trip is expected to last ${fmtNum(m.walkingDurationYears, 0)} years.`)}"
+              </p>
+            </div>
+          </div>
+        </Section>
+
+        {/* Cosmic Visa */}
+        <Section title={<>3. Interplanetary <span style={{ color: "#d4a853", textShadow: "0 0 10px rgba(212,168,83,0.4)" }}>VISA</span> / <span style={{ color: "#d4a853", textShadow: "0 0 10px rgba(212,168,83,0.4)" }}>PASSPORT</span></>} delay={0.1}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: TXT3, letterSpacing: "0.1em" }}>VISA STATUS</span>
+              <span style={{ fontFamily: MONO, fontSize: "0.7rem", fontWeight: 700, color: "#fb923c", background: "rgba(251, 146, 60, 0.1)", padding: "2px 10px", borderRadius: 99, border: "1px solid rgba(251, 146, 60, 0.3)" }}>
+                ⚠ PENDING
+              </span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontFamily: MONO, color: TXT2, borderBottom: `1px dashed ${BORDER}`, paddingBottom: 8 }}>
+              <span>ORIGIN: {data.origin.toUpperCase()}</span>
+              <span>DESTINATION: {data.destination.toUpperCase()}</span>
+            </div>
+            <div style={{ padding: "12px 14px", background: "rgba(255,255,255,0.02)", border: `1px solid ${BORDER}`, borderRadius: 10 }}>
+              <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: AMBER, marginBottom: 4 }}>IMMIGRATION REQUIREMENT</div>
+              <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: TXT, lineHeight: 1.5, margin: 0 }}>
+                {data.destination.toLowerCase() === "pluto"
+                  ? 'Pluto Immigration: "Please explain why you are coming here."'
+                  : data.transportMode.toLowerCase().includes("teleport")
+                  ? '"Please provide your physical body for inspection before quantum reassembly."'
+                  : `${data.destination} immigration has requested formal proof that you actually have a valid reason for coming.`}
+              </p>
+            </div>
+          </div>
+        </Section>
+      </div>
+
+      {/* 2. Packing List From Hell & 4. Space Customs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+        {/* Packing List */}
+        <Section title={<>2. <span style={{ color: "#d4a853", textShadow: "0 0 10px rgba(212,168,83,0.4)" }}>PACKING LIST</span> From Hell</>} delay={0.12}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {(ai.packingList?.length ? ai.packingList : [
+              r.shoesRequiredPairs > 0 ? `${fmtNum(r.shoesRequiredPairs, 0)} pairs of shoes` : "Space-time warranty",
+              r.foodKcalTotal > 0 ? `${(r.foodKcalTotal / 1e6).toFixed(1)}M snacks` : "Reality repair kit",
+              "Water & Oxygen tanks",
+              "A very good playlist",
+              "Family photos for your 400th descendant",
+              "One unnecessary towel",
+              "One suspicious snail (for emotional support)"
+            ]).map((item, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 12px", background: "rgba(255,255,255,0.015)", border: `1px solid ${BORDER}`, borderRadius: 8 }}>
+                <span style={{ color: AMBER, fontSize: "0.7rem", fontFamily: MONO }}>[{i + 1}]</span>
+                <span style={{ fontFamily: SANS, fontSize: "0.8rem", color: TXT }}>{item}</span>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* Space Customs */}
+        <Section title={<>4. Cosmic <span style={{ color: "#d4a853", textShadow: "0 0 10px rgba(212,168,83,0.4)" }}>CUSTOMS</span> Declaration</>} delay={0.14}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3, letterSpacing: "0.1em" }}>DEPARTURE CHECKLIST</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {["Food & Rations", "Water Supplies", "Oxygen Tanks", r.shoesRequiredPairs > 0 ? `${fmtNum(r.shoesRequiredPairs, 0)} Shoes` : "Reality Repair Kit", "One Suspicious Snail"].map((item, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.75rem", fontFamily: SANS, color: TXT2 }}>
+                  <span style={{ color: "#4ade80", fontWeight: 700 }}>☑</span> {item}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "rgba(255,255,255,0.02)", border: `1px solid ${BORDER}`, borderRadius: 8, marginTop: 4 }}>
+              <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: TXT3 }}>DECLARED VALUE</span>
+              <span style={{ fontFamily: MONO, fontSize: "0.85rem", fontWeight: 700, color: AMBER }}>₹0</span>
+            </div>
+            <div style={{ padding: "12px 14px", background: "rgba(212,168,83,0.04)", border: `1px solid rgba(212,168,83,0.2)`, borderRadius: 10 }}>
+              <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: AMBER, marginBottom: 4 }}>CUSTOMS OFFICER NOTE</div>
+              <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: TXT, lineHeight: 1.5, margin: 0, fontStyle: "italic" }}>
+                "Why are you bringing a snail to {data.destination}?"
+              </p>
+            </div>
+          </div>
+        </Section>
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           2. MISSION VERDICT
