@@ -2,7 +2,7 @@
 
 
 
-# [Project Name] 🎯
+# CosmicWalk - Interplanetary Planner 🎯
 
 
 ## Basic Details
@@ -10,42 +10,57 @@
 
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Member 1: Vinay S Nair - TKM College of Engineering
+- Member 2: Sajeer F M - TKM College of Engineering
 
 ### Project Description
-[2-3 lines about what your project does]
+CosmicWalk is an unnecessarily serious calculator for walking between planets. Find out how many steps, shoes, snacks, and questionable life choices it takes to reach your next favourite planet—and whether you’ll survive the journey.
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+If someone wants to travel from one planet to another, how are they supposed to get the necessary info?
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
+Our project used high level calculations and computations that use well researched information to get you the best possible planning for your next interplanar journey.
 
 ## Technical Details
 ### Technologies/Components Used
 For Software:
-- [Languages used]
-- [Frameworks used]
-- [Libraries used]
-- [Tools used]
+- Languages - Python, TypeScript
+- Frameworks - React (with Vite)
+- Libraries & tools - Tailwind CSS, Framer Motion, Three.js
 
-For Hardware:
-- [List main components]
-- [List specifications]
-- [List tools required]
+
 
 ### Implementation
 For Software:
 # Installation
-[commands]
+Clone the repository and install the dependencies.
+
+git clone <your-repository-url>
+cd CosmicWalk
+
+cd frontend
+npm install
+
+cd ../backend
+pip install -r requirements.txt
+
 
 # Run
-[commands]
+For frontend - npm run dev
+For backend - uvicorn app.main:app --reload
 
 ### Project Documentation
 For Software:
+CosmicWalk is a web-based interplanetary walking calculator that combines astronomical distance data, walking-speed assumptions, and a 3D planetary interface to estimate the requirements of travelling between planets.
+
+The application allows users to:
+
+Select a starting planet and destination.
+Visualize planets through an interactive 3D interface.
+Calculate walking distance and estimated travel time.
+Estimate steps, shoes, snacks, and other unnecessarily important journey requirements.
+Explore the results through animated transitions.
 
 # Screenshots (Add at least 3)
 ![Screenshot1](Add screenshot 1 here with proper name)
@@ -57,36 +72,6 @@ For Software:
 ![Screenshot3](Add screenshot 3 here with proper name)
 *Add caption explaining what this shows*
 
-# Diagrams
-![Workflow](Add your workflow/architecture diagram here)
-*Add caption explaining your workflow*
-
-For Hardware:
-
-# Schematic & Circuit
-![Circuit](Add your circuit diagram here)
-*Add caption explaining connections*
-
-![Schematic](Add your schematic diagram here)
-*Add caption explaining the schematic*
-
-# Build Photos
-![Components](Add photo of your components here)
-*List out all components shown*
-
-![Build](Add photos of build process here)
-*Explain the build steps*
-
-![Final](Add photo of final product here)
-*Explain the final build*
-
-### Project Demo
-# Video
-[Add your demo video link here]
-*Explain what the video demonstrates*
-
-# Additional Demos
-[Add any extra demo materials/links]
 
 ## Team Contributions
 - [Name 1]: [Specific contributions]
