@@ -25,7 +25,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-void bg-radial-gradient text-text-primary">
       {/* ─── Hero Section ─── */}
-      <section className="relative pt-28 pb-16 px-6 border-b border-border bg-grid">
+      <section className="relative pt-12 pb-16 px-8 border-b border-border bg-grid">
         <div className="max-w-[1400px] mx-auto">
           {/* Tactical Status Badges */}
           <motion.div
@@ -142,7 +142,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Mission Logic & Parameters Section ─── */}
-      <section className="px-6 py-24 border-b border-border bg-surface/30">
+      <section className="px-8 py-24 border-b border-border bg-surface/30">
         <div className="max-w-[1400px] mx-auto">
           {/* Section Header */}
           <motion.div
@@ -189,7 +189,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Featured Trail Breakdown Section ─── */}
-      <section className="px-6 py-24 bg-void">
+      <section className="px-8 py-24 bg-void">
         <div className="max-w-[1400px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -261,7 +261,7 @@ export default function Landing() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-border px-6 py-10 bg-surface/20 font-mono">
+      <footer className="border-t border-border px-8 py-10 bg-surface/20 font-mono">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-amber" />

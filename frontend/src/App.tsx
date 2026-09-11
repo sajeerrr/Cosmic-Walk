@@ -17,7 +17,7 @@ export default function App() {
         />
       )}
       <Navbar />
-      <main>
+      <main style={{ paddingTop: "56px" }}>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/plan" element={<PlanJourney />} />

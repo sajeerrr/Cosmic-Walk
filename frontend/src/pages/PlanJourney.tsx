@@ -180,7 +180,7 @@ export default function PlanJourney() {
 
 
   return (
-    <div className="min-h-screen bg-void text-text-primary pt-24 pb-20 px-4 sm:px-8 bg-radial-gradient select-none">
+    <div className="min-h-screen bg-void text-text-primary pt-6 pb-20 px-4 sm:px-8 bg-radial-gradient select-none">
       {/* ─── Calculation Loading Screen Overlay ─── */}
       {isCalculating && (
         <LoadingScreen
