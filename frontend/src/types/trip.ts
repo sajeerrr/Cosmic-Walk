@@ -8,21 +8,50 @@ export interface PassengerTelemetry {
 
 export interface TripMetrics {
   distanceKm: number;
+  distanceAu: number;
+  lightMinutes: number;
   estimatedSteps: number;
   walkingDurationYears: number;
   walkingDurationDays: number;
+  travelTimeHuman: string;
   dailySteps: number;
   difficulty: "Moderate" | "Extreme" | "Existential" | "Impossible";
   survivalProbabilityPercent: number;
+  generationsNeeded: number;
+  humanLifetimes: number;
+  restDays: number;
+  caloriesBurned: number;
+  equivalentPizzas: number;
+  ridiculousnessScore: number;
+  ridiculousnessRating: string;
+  ridiculousnessFunFacts: string[];
+  difficultyScore: number;
+  difficultyDescription: string;
+  maxSpeedKmS: number;
 }
 
 export interface TripResources {
   shoesRequiredPairs: number;
   foodKcalTotal: number;
   waterLitersTotal: number;
+  oxygenKgTotal: number;
   oxygenTanksTotal: number;
   equipmentWeightKg: number;
   emergencyPacks: number;
+  totalMassKg: number;
+  propulsion: Record<string, unknown>;
+}
+
+export interface TripCost {
+  launchCostUsd: number;
+  fuelCostUsd: number;
+  crewCostUsd: number;
+  spacecraftRentalUsd: number;
+  missionControlUsd: number;
+  insuranceUsd: number;
+  exoticFeesUsd: number;
+  contingencyUsd: number;
+  totalUsd: number;
 }
 
 export interface TimelineMilestone {
@@ -32,12 +61,42 @@ export interface TimelineMilestone {
   description: string;
 }
 
+export interface AiTravelReview {
+  comfort: string;
+  speed: string;
+  safety: string;
+  convenience: string;
+  ridiculousness: string;
+}
+
 export interface AiMissionReport {
+  // ── Rich new sections ────────────────────────────────────────────────────
+  introduction: string;
+  whatYouSignedUpFor: string;
+  travelExperience: string;
+  dailyRoutine: string;
+  foodStory: string;
+  waterStory: string;
+  footwearStory: string;
+  boredomIndex: string;
+  thingsYouWillMiss: string[];
+  thingsYouWillSee: string[];
+  cosmicProblems: string[];
+  packingList: string[];
+  travelAdvice: string[];
+  survivalGuide: string;
+  generationalImpact: string;
+  arrivalScenario: string;
+  travelReview: AiTravelReview | null;
+  fictionalInsurance: string;
+  customerReview: string;
+  finalVerdict: string;
+  funRating: number;
+  // ── Legacy fields (always populated as fallback) ─────────────────────────
   missionSummary: string;
   majorChallenges: string[];
   personalizedRecommendations: string[];
   humorousObservations: string[];
-  finalVerdict: string;
 }
 
 export interface MissionVerdict {
@@ -69,9 +128,12 @@ export interface TripCalculationResult {
   destination: string;
   departureDate: string;
   transportMode: string;
+  modeName: string;
+  modeCategory: string;
   passenger: PassengerTelemetry;
   metrics: TripMetrics;
   resources: TripResources;
+  cost: TripCost;
   timeline: TimelineMilestone[];
   aiReport: AiMissionReport;
   verdict?: MissionVerdict;

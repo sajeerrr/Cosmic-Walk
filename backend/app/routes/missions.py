@@ -102,17 +102,28 @@ async def generate_report(request: ReportRequest):
     """
     Generate an AI-powered travel report.
 
-    Creates an engaging narrative about the mission journey.
-    Note: Requires ANTHROPIC_API_KEY for full reports, otherwise generates mock reports.
+    Creates an engaging, personalized narrative about the mission journey.
+    Accepts optional passenger data for personalisation.
+    Note: Requires GROQ_API_KEY (or ANTHROPIC_API_KEY) for full reports, otherwise generates mock reports.
     """
     try:
         engine = AIReportEngine()
+        passenger = None
+        if request.passenger_name:
+            passenger = {
+                "name": request.passenger_name,
+                "age": request.passenger_age,
+                "height_cm": request.passenger_height_cm,
+                "weight_kg": request.passenger_weight_kg,
+                "sex": request.passenger_sex,
+            }
         result = await engine.generate_report(
             request.origin_id,
             request.destination_id,
             request.travel_date,
             request.mode_id,
-            request.crew_size
+            request.crew_size,
+            passenger=passenger,
         )
         return result
     except ValueError as e:
