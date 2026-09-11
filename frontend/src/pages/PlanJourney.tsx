@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import Badge from "../components/Badge";
@@ -6,6 +6,9 @@ import Button from "../components/Button";
 import SolarSystem from "../components/solar-system/SolarSystem";
 import LoadingScreen from "../components/LoadingScreen";
 import { PLANETS, formatDistance } from "../data/planets";
+import { generateMockTripResult } from "../data/mockTripResult";
+import type { TripCalculationResult } from "../types/trip";
+import JourneyResults from "../components/JourneyResults";
 
 // Mock planetary information database (marked as MOCK DATA until backend integration)
 const PLANET_MOCK_DATA: Record<
@@ -85,25 +88,11 @@ export default function PlanJourney() {
   const [focusedPlanet, setFocusedPlanet] = useState<string>("Mars");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
-  const [calculatedPayload, setCalculatedPayload] = useState<any | null>(null);
+  const [pendingResult, setPendingResult] = useState<TripCalculationResult | null>(null);
+  const [tripResult, setTripResult] = useState<TripCalculationResult | null>(null);
 
   // Computed distance & time using selected mode speed
   const selectedMode = TRANSPORT_MODES.find((m) => m.id === transportMode) || TRANSPORT_MODES[0];
-  const originPlanet = PLANETS.find((p) => p.name === origin);
-  const destPlanet = PLANETS.find((p) => p.name === destination);
-
-  const rawDistanceKm = useMemo(() => {
-    if (!originPlanet || !destPlanet) return 225_000_000;
-    return Math.abs(destPlanet.distanceFromSunKm - originPlanet.distanceFromSunKm);
-  }, [originPlanet, destPlanet]);
-
-  const estimatedHours = useMemo(() => {
-    return rawDistanceKm / selectedMode.speedKmh;
-  }, [rawDistanceKm, selectedMode.speedKmh]);
-
-  const estimatedYears = useMemo(() => {
-    return estimatedHours / (24 * 365.25);
-  }, [estimatedHours]);
 
   // Focused planet details (Origin or Destination or 3D selected)
   const activeInfoPlanet = PLANETS.find((p) => p.name === focusedPlanet) || PLANETS[0];
@@ -153,15 +142,12 @@ export default function PlanJourney() {
       return;
     }
 
-    // Construct POST payload structure for future /api/trips/calculate endpoint
-    const payload = {
+    // Generate mock calculation result (matching POST /api/trips/calculate schema)
+    const result = generateMockTripResult({
       origin,
       destination,
       departureDate: travelDate,
-      mode: transportMode,
-      speedKmh: selectedMode.speedKmh,
-      distanceKm: rawDistanceKm,
-      estimatedYears: Number(estimatedYears.toFixed(1)),
+      transportMode,
       passenger: {
         name: passengerName.trim(),
         heightCm: h,
@@ -169,9 +155,9 @@ export default function PlanJourney() {
         age: a,
         sex,
       },
-    };
+    });
 
-    setCalculatedPayload(payload);
+    setPendingResult(result);
     setIsCalculating(true);
   };
 
@@ -183,13 +169,26 @@ export default function PlanJourney() {
           mode="calculation"
           originName={origin}
           destinationName={destination}
-          onComplete={() => setIsCalculating(false)}
+          onComplete={() => {
+            setIsCalculating(false);
+            if (pendingResult) {
+              setTripResult(pendingResult);
+            }
+          }}
         />
       )}
 
       <div className="max-w-[1400px] mx-auto">
-        {/* Header Telemetry Bar */}
-        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
+        {/* Render Results Page View if calculation has completed */}
+        {tripResult ? (
+          <JourneyResults
+            data={tripResult}
+            onModifyParams={() => setTripResult(null)}
+          />
+        ) : (
+          <>
+            {/* Header Telemetry Bar */}
+            <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="accent">[ MISSION PLANNER v1.0 ]</Badge>
@@ -534,50 +533,11 @@ export default function PlanJourney() {
                 </p>
               </div>
             </div>
-
-            {/* API Calculation Results Preview Box (when calculation completed) */}
-            {calculatedPayload && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-5 rounded-xs border border-amber/40 bg-amber/[0.04] space-y-3 font-mono text-xs"
-              >
-                <div className="flex items-center justify-between border-b border-amber/30 pb-2 text-amber font-semibold">
-                  <span>[ CALCULATION MANIFEST PREPARED ]</span>
-                  <span>STATUS: 200 OK</span>
-                </div>
-                <div className="space-y-1.5 text-text-secondary">
-                  <div className="flex justify-between">
-                    <span>Route Corridor:</span>
-                    <span className="text-text-primary font-semibold">{calculatedPayload.origin} → {calculatedPayload.destination}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Distance:</span>
-                    <span className="text-text-primary font-semibold">{formatDistance(calculatedPayload.distanceKm)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Duration:</span>
-                    <span className="text-amber font-semibold">{calculatedPayload.estimatedYears} Years</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Passenger:</span>
-                    <span className="text-text-primary">{calculatedPayload.passenger.name} ({calculatedPayload.passenger.age} yrs)</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-amber/20">
-                  <span className="text-[0.6rem] text-text-tertiary uppercase tracking-wider block mb-1">
-                    API Endpoint Payload (`POST /api/trips/calculate`):
-                  </span>
-                  <pre className="p-2.5 rounded-xs bg-void/90 border border-border text-[0.65rem] text-amber overflow-x-auto">
-                    {JSON.stringify(calculatedPayload, null, 2)}
-                  </pre>
-                </div>
-              </motion.div>
-            )}
           </div>
         </div>
-      </div>
+      </>
+      )}
     </div>
-  );
+  </div>
+);
 }

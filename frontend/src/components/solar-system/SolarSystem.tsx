@@ -8,6 +8,8 @@ import OrbitRing from "./OrbitRing";
 import Starfield from "./Starfield";
 import { PLANETS } from "../../data/planets";
 
+import TrajectoryLine from "./TrajectoryLine";
+
 interface SolarSystemProps {
   className?: string;
   highlightedPlanets?: string[];
@@ -15,6 +17,7 @@ interface SolarSystemProps {
   onSelectPlanet?: (name: string) => void;
   originName?: string;
   destinationName?: string;
+  showTrajectory?: boolean;
 }
 
 function CameraIntro({ onComplete }: { onComplete: () => void }) {
@@ -82,6 +85,7 @@ export default function SolarSystem({
   onSelectPlanet,
   originName,
   destinationName,
+  showTrajectory = false,
 }: SolarSystemProps) {
   const [introFinished, setIntroFinished] = useState(false);
 
@@ -151,6 +155,11 @@ export default function SolarSystem({
               </group>
             );
           })}
+
+          {/* Trajectory Vector Line */}
+          {showTrajectory && originName && destinationName && (
+            <TrajectoryLine originName={originName} destinationName={destinationName} />
+          )}
 
           {/* Starfield */}
           <Starfield />
