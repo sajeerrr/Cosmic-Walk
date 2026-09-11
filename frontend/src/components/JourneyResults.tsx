@@ -65,7 +65,40 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
           <MetricCell label="Difficulty" value={data.metrics.difficulty} tag="05.DIFF" danger={data.metrics.difficulty === "Existential"} />
           <MetricCell label="Survival Probability" value={`${data.metrics.survivalProbabilityPercent}%`} detail="Vacuum adjusted" tag="06.SURVIVAL" />
         </div>
+
+        {/* ─── Mission Verdict Banner ─── */}
+        {data.verdict && (
+          <div className="pt-4 border-t border-border">
+            <div className="p-4 rounded-xs border border-amber/50 bg-amber/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-mono">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge variant="accent">VERDICT: {data.verdict.classification}</Badge>
+                  <span className="text-amber font-bold text-sm">[{data.verdict.score}/100 SCORE]</span>
+                </div>
+                <h3 className="text-lg font-bold text-text-primary">{data.verdict.title}</h3>
+                <p className="text-xs text-text-secondary leading-relaxed">{data.verdict.summary}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── Scale Comparisons Grid ─── */}
+        {data.scale_comparison && data.scale_comparison.length > 0 && (
+          <div className="pt-4 border-t border-border space-y-3 font-mono">
+            <span className="text-label block text-xs text-amber font-bold">ASTRONOMICAL SCALE COMPARISONS</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {data.scale_comparison.map((item, idx) => (
+                <div key={idx} className="p-3 border border-border rounded-xs bg-void/40 space-y-1">
+                  <div className="text-[0.6rem] text-text-tertiary uppercase">{item.label}</div>
+                  <div className="text-sm font-bold text-text-primary">{item.formatted_value}</div>
+                  <div className="text-[0.65rem] text-amber">{item.unit}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
+
 
       {/* ─── 3D Mission Trajectory Map Section ─── */}
       <motion.div

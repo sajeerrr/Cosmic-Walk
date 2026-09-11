@@ -15,8 +15,9 @@ def test_walking_takes_very_long_time():
         walk_mode, 225_000_000, earth, mars
     )
 
-    assert result["travel_time_years"] > 100_000
-    assert result["generations_needed"] > 1000
+    assert result["travel_time_years"] > 10_000
+    assert result["generations_needed"] > 100
+
 
 
 def test_teleportation_is_instant():

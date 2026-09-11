@@ -30,8 +30,11 @@ async def calculate_mission(request: MissionRequest):
             request.destination_id,
             request.travel_date,
             request.mode_id,
-            request.crew_size
+            request.crew_size,
+            modifiers=request.modifiers,
+            seed=request.seed
         )
+
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

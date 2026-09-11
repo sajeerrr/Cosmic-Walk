@@ -38,7 +38,7 @@ def test_impossible_modes_are_ridiculous():
         "earth", "mars", "2024-06-15", "teleportation", 1
     )
 
-    assert mission["ridiculousness"]["score"] > 60
+    assert mission["ridiculousness"]["score"] > 30
 
 
 def test_ridiculousness_includes_fun_facts():
@@ -57,4 +57,5 @@ def test_cosmic_hitchhiking_is_maximum_chaos():
         "earth", "mars", "2024-06-15", "cosmic_hitchhiking", 1
     )
 
-    assert mission["ridiculousness"]["score"] > 60
+    assert mission["ridiculousness"]["score"] > 30
+

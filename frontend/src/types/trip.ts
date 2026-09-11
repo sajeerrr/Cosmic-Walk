@@ -40,6 +40,29 @@ export interface AiMissionReport {
   finalVerdict: string;
 }
 
+export interface MissionVerdict {
+  classification: "SENSIBLE" | "DIFFICULT" | "EXTREME" | "ABSURD" | "IMPOSSIBLE";
+  score: number;
+  title: string;
+  summary: string;
+}
+
+export interface ScaleComparisonItem {
+  label: string;
+  value: number;
+  formatted_value: string;
+  unit: string;
+}
+
+export interface MissionModifierParams {
+  speed_override_km_h?: number;
+  cargo_mass_kg?: number;
+  unlimited_food?: boolean;
+  unlimited_water?: boolean;
+  unlimited_fuel?: boolean;
+  random_events_enabled?: boolean;
+}
+
 export interface TripCalculationResult {
   tripId: string;
   origin: string;
@@ -51,4 +74,7 @@ export interface TripCalculationResult {
   resources: TripResources;
   timeline: TimelineMilestone[];
   aiReport: AiMissionReport;
+  verdict?: MissionVerdict;
+  scale_comparison?: ScaleComparisonItem[];
+  events?: Array<{ day: number; event: string; type?: string }>;
 }

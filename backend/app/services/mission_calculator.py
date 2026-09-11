@@ -1,14 +1,18 @@
-from datetime import date, datetime
-from typing import Dict, Any
+from datetime import datetime
+from typing import Dict, Any, Optional
 
 from app.services.data_loader import DataLoader
 from app.services.astronomy_engine import AstronomyEngine
 from app.services.distance_engine import DistanceEngine
 from app.services.travel_mode_engine import TravelModeEngine
 from app.services.resource_engine import ResourceEngine
-from app.services.cost_engine import CostEngine, CostBreakdown
+from app.services.cost_engine import CostEngine
 from app.services.difficulty_engine import DifficultyEngine
 from app.services.ridiculousness_engine import RidiculousnessEngine
+from app.services.verdict_engine import VerdictEngine
+from app.services.scale_engine import ScaleEngine
+from app.models.mission import MissionModifier
+
 
 
 class MissionCalculator:
@@ -20,14 +24,21 @@ class MissionCalculator:
         destination_id: str,
         travel_date: str,
         mode_id: str,
-        crew_size: int
+        crew_size: int = 1,
+        modifiers: Optional[MissionModifier] = None,
+        seed: Optional[int] = None
     ) -> Dict[str, Any]:
-        """
-        Calculate complete mission details using all engines.
-        """
-        # Load data
-        origin = DataLoader.get_planet(origin_id)
-        destination = DataLoader.get_planet(destination_id)
+        # Load celestial objects or planets
+        try:
+            origin = DataLoader.get_celestial_object(origin_id)
+        except ValueError:
+            origin = DataLoader.get_planet(origin_id)
+
+        try:
+            destination = DataLoader.get_celestial_object(destination_id)
+        except ValueError:
+            destination = DataLoader.get_planet(destination_id)
+
         mode_data = DataLoader.get_travel_mode(mode_id)
 
         # Parse date
@@ -39,17 +50,33 @@ class MissionCalculator:
         )
         distance_km = distance_result["distance_km"]
 
+        # Modifier overrides
+        speed_override = modifiers.speed_override_km_h if modifiers else None
+        active_hours_override = modifiers.active_hours_per_day if modifiers else None
+        unlimited_food = modifiers.unlimited_food if modifiers else False
+        unlimited_water = modifiers.unlimited_water if modifiers else False
+        unlimited_fuel = modifiers.unlimited_fuel if modifiers else False
+
         # Calculate travel time
         travel_result = TravelModeEngine.calculate_travel_time(
-            mode_data, distance_km, origin, destination
+            mode_data, distance_km, origin, destination,
+            speed_override_km_h=speed_override,
+            active_hours_override=active_hours_override
         )
 
         travel_days = travel_result.get("travel_time_days", 0)
 
         # Calculate resources
         resources = ResourceEngine.calculate_resources(
-            travel_days, crew_size, mode_data, distance_km
+            travel_days, crew_size, mode_data, distance_km,
+            unlimited_food=unlimited_food,
+            unlimited_water=unlimited_water,
+            unlimited_fuel=unlimited_fuel
         )
+
+        # Add cargo mass if modifier specified
+        if modifiers and modifiers.cargo_mass_kg:
+            resources["total_mass_kg"] += modifiers.cargo_mass_kg
 
         # Calculate cost
         cost = CostEngine.calculate_mission_cost(
@@ -68,7 +95,7 @@ class MissionCalculator:
             distance_km, travel_days, cost.total_usd
         )
 
-        return {
+        result_dict = {
             "origin": origin,
             "destination": destination,
             "mode": mode_data,
@@ -103,3 +130,33 @@ class MissionCalculator:
                 "fun_facts": ridiculousness.fun_facts
             }
         }
+
+        # Calculate Verdict
+        verdict = VerdictEngine.generate_verdict(origin, destination, mode_data, result_dict)
+        result_dict["verdict"] = {
+            "classification": verdict.classification,
+            "score": verdict.score,
+            "title": verdict.title,
+            "summary": verdict.summary
+        }
+
+        # Calculate Scale Comparisons
+        scale_items = ScaleEngine.calculate_scale_comparisons(
+            distance_km,
+            travel_result.get("travel_time_years", 0),
+            travel_days,
+            resources.get("life_support", {}).get("food_kcal", 0)
+        )
+        result_dict["scale_comparison"] = [item.model_dump() for item in scale_items]
+
+        # Generate Random Events
+        if not modifiers or modifiers.random_events_enabled:
+            from app.services.simulation_engine import SimulationEngine
+            result_dict["events"] = SimulationEngine.generate_random_events(
+                origin_id, destination_id, travel_date, mode_id, seed=seed
+            )
+        else:
+            result_dict["events"] = []
+
+
+        return result_dict

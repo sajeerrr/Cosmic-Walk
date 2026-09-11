@@ -6,7 +6,7 @@ import Button from "../components/Button";
 import SolarSystem from "../components/solar-system/SolarSystem";
 import LoadingScreen from "../components/LoadingScreen";
 import { PLANETS, formatDistance } from "../data/planets";
-import { generateMockTripResult } from "../data/mockTripResult";
+import { calculateTrip } from "../api/client";
 import type { TripCalculationResult } from "../types/trip";
 import JourneyResults from "../components/JourneyResults";
 
@@ -69,8 +69,14 @@ const TRANSPORT_MODES = [
   { id: "WALKING", name: "Standard Walk", speedKmh: 5.0, icon: "🏃", desc: "Baseline stride speed." },
   { id: "MOONWALK", name: "Low-G Moonwalk", speedKmh: 3.2, icon: "🦘", desc: "Bounding low-gravity hops." },
   { id: "POWER_STRIDE", name: "Power Stride", speedKmh: 7.5, icon: "⚡", desc: "Aggressive speed-walking." },
-  { id: "BAREFOOT", name: "Barefoot Stride", speedKmh: 4.0, icon: "🦶", desc: "Blister acceleration mode." },
-  { id: "EVA_SPACEWALK", name: "EVA Suit Glide", speedKmh: 1.2, icon: "🛰️", desc: "Tethered space suit float." },
+  { id: "snail", name: "Garden Snail", speedKmh: 0.001, icon: "🐌", desc: "Lettuce-powered crawl." },
+  { id: "horse", name: "Space Stallion", speedKmh: 49.6, icon: "🐎", desc: "Equine void trotting." },
+  { id: "skateboard", name: "Hover Skateboard", speedKmh: 24.8, icon: "🛹", desc: "360-flip across orbits." },
+  { id: "chemical_rocket", name: "Chemical Rocket", speedKmh: 28800.0, icon: "🚀", desc: "Exploded propulsion." },
+  { id: "warp_drive", name: "Warp Drive", speedKmh: 1079252848.0, icon: "✨", desc: "Spacetime fold." },
+  { id: "teleportation", name: "Teleportation", speedKmh: 1000000000.0, icon: "⚡", desc: "Quantum state shift." },
+  { id: "magic_portal", name: "Magic Portal", speedKmh: 1000000000.0, icon: "🌀", desc: "Ancient stone gateway." },
+  { id: "cosmic_hitchhiking", name: "Cosmic Hitchhiker", speedKmh: 360000000.0, icon: "👍", desc: "Towel required." },
 ];
 
 export default function PlanJourney() {
@@ -84,6 +90,11 @@ export default function PlanJourney() {
   const [weightKg, setWeightKg] = useState("72");
   const [age, setAge] = useState("32");
   const [sex, setSex] = useState("Male");
+
+  // Mission Modifiers
+  const [unlimitedFood, setUnlimitedFood] = useState(false);
+  const [unlimitedFuel, setUnlimitedFuel] = useState(false);
+  const [randomSeed, setRandomSeed] = useState<number | undefined>(undefined);
 
   const [focusedPlanet, setFocusedPlanet] = useState<string>("Mars");
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -114,7 +125,7 @@ export default function PlanJourney() {
   };
 
   // Submit & validate form
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
     setValidationError(null);
 
     if (origin === destination) {
@@ -142,8 +153,9 @@ export default function PlanJourney() {
       return;
     }
 
-    // Generate mock calculation result (matching POST /api/trips/calculate schema)
-    const result = generateMockTripResult({
+    setIsCalculating(true);
+
+    const result = await calculateTrip({
       origin,
       destination,
       departureDate: travelDate,
@@ -155,11 +167,17 @@ export default function PlanJourney() {
         age: a,
         sex,
       },
+      modifiers: {
+        unlimited_food: unlimitedFood,
+        unlimited_fuel: unlimitedFuel,
+      },
+      seed: randomSeed,
     });
 
     setPendingResult(result);
-    setIsCalculating(true);
   };
+
+
 
   return (
     <div className="min-h-screen bg-void text-text-primary pt-24 pb-20 px-4 sm:px-8 bg-radial-gradient select-none">
@@ -434,6 +452,48 @@ export default function PlanJourney() {
                 </div>
               </div>
             </div>
+
+            {/* Section 04: What-If Mission Modifiers */}
+            <div className="p-6 rounded-xs border border-border bg-surface/50 space-y-6">
+              <div className="flex items-center justify-between border-b border-border pb-4 font-mono text-xs text-amber">
+                <span>04 // WHAT-IF PROTOCOL MODIFIERS</span>
+                <span className="w-1.5 h-1.5 bg-amber rounded-full" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+                <label className="flex items-center gap-2 cursor-pointer p-3 border border-border rounded-xs bg-void/30 hover:border-amber/50 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={unlimitedFood}
+                    onChange={(e) => setUnlimitedFood(e.target.checked)}
+                    className="accent-amber"
+                  />
+                  <span>Unlimited Food / Lettuce Supply</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer p-3 border border-border rounded-xs bg-void/30 hover:border-amber/50 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={unlimitedFuel}
+                    onChange={(e) => setUnlimitedFuel(e.target.checked)}
+                    className="accent-amber"
+                  />
+                  <span>Unlimited Propulsion Fuel</span>
+                </label>
+
+                <div className="sm:col-span-2 space-y-1.5 pt-2">
+                  <label className="text-label block">Reproducible Cosmic Event Seed (Optional)</label>
+                  <input
+                    type="number"
+                    value={randomSeed ?? ""}
+                    onChange={(e) => setRandomSeed(e.target.value ? Number(e.target.value) : undefined)}
+                    placeholder="e.g. 42 (Leave empty for random events)"
+                    className="w-full bg-void border border-border-strong rounded-xs px-3 py-2 font-mono text-xs text-text-primary focus:border-amber focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
 
             {/* Validation Alert Message Box */}
             <AnimatePresence>

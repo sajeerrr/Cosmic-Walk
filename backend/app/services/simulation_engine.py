@@ -1,7 +1,6 @@
 import uuid
 import random
-from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from app.models.simulation import WhatIfScenario, SimulationResult, SimulationEvent
 from app.services.mission_calculator import MissionCalculator
@@ -11,6 +10,20 @@ from app.services.data_loader import DataLoader
 class SimulationEngine:
     """Run what-if scenarios and journey simulations."""
 
+    COSMIC_EVENTS = [
+        ("Alien Toll Booth encountered - exact change required", "bureaucracy", "minor", 1.0),
+        ("Cosmic Traffic Jam around asteroid belt", "delay", "minor", 3.0),
+        ("Space Pirates demanded 10% of emergency snacks", "pirate", "minor", 0.0),
+        ("Hit an Asteroid Pothole - hull patch deployed", "damage", "minor", 0.5),
+        ("Cosmic Snack Shortage - rationing initiated", "supplies", "minor", 0.0),
+        ("Space Construction Zone slowdown", "delay", "minor", 2.0),
+        ("Lost Navigation System - asked alien for directions", "navigation", "minor", 1.0),
+        ("Snail Strike - locomotion halted for 24h", "strike", "minor", 1.0),
+        ("Alien Hitchhiker picked up - brought good music", "hitchhiker", "minor", 0.0),
+        ("Cosmic Bureaucracy Checkpoint - paperwork filed", "bureaucracy", "minor", 0.5),
+        ("Unexpected Wormhole boost - travel accelerated!", "wormhole", "boost", -5.0),
+    ]
+
     EVENT_TEMPLATES = {
         "realistic": [
             ("Course correction burn completed", "minor_fuel_use", "minor"),
@@ -19,46 +32,36 @@ class SimulationEngine:
             ("Navigation calibration updated", "minor_event", "minor"),
             ("Minor debris avoidance maneuver", "minor_event", "minor"),
             ("Life support systems check", "minor_event", "minor"),
-            ("Communication relay established", "minor_event", "minor"),
         ],
         "theoretical": [
             ("Reactor efficiency at 94%", "minor_event", "minor"),
             ("Magnetic containment field stable", "minor_event", "minor"),
             ("Fuel injection system optimized", "minor_event", "minor"),
             ("Radiation shielding integrity check", "minor_event", "minor"),
-            ("Propulsion system diagnostic", "minor_event", "minor"),
         ],
         "absurd": [
             ("Aliens spotted! (It was space debris)", "minor_event", "minor"),
             ("Crew ran out of snacks", "morale_drop", "minor"),
             ("Someone pressed the red button (false alarm)", "critical_event", "major"),
             ("Space pigeon attacked solar panels", "minor_damage", "minor"),
-            ("Unexpected cosmic ray hit the navigation computer", "minor_event", "minor"),
-            ("Crew member told a space joke - laughter detected", "morale_boost", "minor"),
-            ("Artificial gravity glitch - everyone floated for 10 minutes", "minor_event", "minor"),
+            ("Unexpected cosmic ray hit navigation computer", "minor_event", "minor"),
         ],
         "impossible": [
             ("Reality glitch detected - universe rebooting", "dimensional_event", "major"),
             ("Time loop encountered (or was it?)", "temporal_event", "major"),
             ("Physics engine complained about impossible velocities", "impossible_event", "minor"),
             ("Paradox averted successfully", "temporal_event", "minor"),
-            ("Hyperspace turbulence detected", "dimensional_event", "minor"),
-            ("Warp bubble stabilized", "dimensional_event", "minor"),
         ],
         "human_powered": [
             ("Rest stop taken - legs are sore", "rest_stop", "minor"),
             ("Beautiful cosmic view observed", "sightseeing", "minor"),
             ("Shoelace retied", "minor_event", "minor"),
-            ("Hydration break completed", "minor_event", "minor"),
             ("Generations passed - new walker takes over", "generational", "major"),
-            ("Historic moment documented for future generations", "milestone", "minor"),
         ],
     }
 
     @staticmethod
     def run_what_if(scenario: WhatIfScenario) -> SimulationResult:
-        """Run a modified scenario and compare to baseline."""
-        # Calculate baseline mission
         baseline = MissionCalculator.calculate_mission(
             scenario.origin_id,
             scenario.destination_id,
@@ -67,7 +70,6 @@ class SimulationEngine:
             scenario.crew_size
         )
 
-        # Apply modifications to create modified scenario
         modified = baseline.copy()
         for key, value in scenario.modifications.items():
             if key in modified:
@@ -75,19 +77,10 @@ class SimulationEngine:
                     modified[key], value, key
                 )
 
-        # Recalculate dependent values
         modified = SimulationEngine._recalculate_dependencies(modified, scenario)
-
-        # Compare baseline and modified
         comparison = SimulationEngine._compare_scenarios(baseline, modified)
-
-        # Generate journey events
         events = SimulationEngine._generate_events(scenario, modified)
-
-        # Determine outcome
         outcome = SimulationEngine._determine_outcome(scenario, modified, events)
-
-        # Generate lessons learned
         lessons = SimulationEngine._generate_lessons(comparison, outcome, scenario)
 
         return SimulationResult(
@@ -101,15 +94,41 @@ class SimulationEngine:
         )
 
     @staticmethod
+    def generate_random_events(
+        origin_id: str,
+        destination_id: str,
+        travel_date: str,
+        mode_id: str,
+        seed: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
+        if seed is not None:
+            rng = random.Random(seed)
+        else:
+            seed_val = hash(f"{origin_id}{destination_id}{travel_date}{mode_id}")
+            rng = random.Random(seed_val)
+
+        events_count = rng.randint(2, 5)
+        selected = rng.sample(SimulationEngine.COSMIC_EVENTS, min(events_count, len(SimulationEngine.COSMIC_EVENTS)))
+
+        results = []
+        for idx, item in enumerate(selected):
+            results.append({
+                "day": (idx + 1) * 15,
+                "event": item[0],
+                "type": item[1],
+                "severity": item[2],
+                "time_impact_days": item[3]
+            })
+
+        return results
+
+    @staticmethod
     def _apply_modification(current_value: Any, modification: Any, key: str) -> Any:
-        """Apply a modification to a value."""
         if isinstance(modification, dict) and isinstance(current_value, dict):
-            # Deep merge
             result = current_value.copy()
             result.update(modification)
             return result
         elif isinstance(modification, (int, float)) and isinstance(current_value, (int, float)):
-            # Apply multiplier or setter
             if isinstance(modification, float) and 0 < modification < 10:
                 return current_value * modification
             return modification
@@ -118,20 +137,24 @@ class SimulationEngine:
 
     @staticmethod
     def _recalculate_dependencies(modified: Dict[str, Any], scenario: WhatIfScenario) -> Dict[str, Any]:
-        """Recalculate dependent values after modifications."""
-        # If distance changed, recalculate travel time
         if "distance_km" in scenario.modifications:
             mode_data = DataLoader.get_travel_mode(scenario.mode_id)
             from app.services.travel_mode_engine import TravelModeEngine
-            origin = DataLoader.get_planet(scenario.origin_id)
-            dest = DataLoader.get_planet(scenario.destination_id)
+            try:
+                origin = DataLoader.get_celestial_object(scenario.origin_id)
+            except ValueError:
+                origin = DataLoader.get_planet(scenario.origin_id)
+
+            try:
+                dest = DataLoader.get_celestial_object(scenario.destination_id)
+            except ValueError:
+                dest = DataLoader.get_planet(scenario.destination_id)
 
             travel_result = TravelModeEngine.calculate_travel_time(
                 mode_data, modified["distance_km"], origin, dest
             )
             modified["travel_time"] = travel_result
 
-        # If travel time changed, recalculate resources and costs
         if "travel_time" in modified:
             travel_days = modified["travel_time"].get("travel_time_days", 0)
             mode_data = DataLoader.get_travel_mode(scenario.mode_id)
@@ -167,10 +190,7 @@ class SimulationEngine:
 
     @staticmethod
     def _compare_scenarios(baseline: Dict[str, Any], modified: Dict[str, Any]) -> Dict[str, Any]:
-        """Compare baseline and modified scenarios."""
         comparison = {}
-
-        # Compare key metrics
         metrics = ["distance_km", "travel_time", "cost"]
         for metric in metrics:
             if metric in baseline and metric in modified:
@@ -193,36 +213,29 @@ class SimulationEngine:
                             "difference_percent": diff_pct,
                             "changed": diff != 0
                         }
-
         return comparison
 
     @staticmethod
     def _generate_events(scenario: WhatIfScenario, modified: Dict[str, Any]) -> List[SimulationEvent]:
-        """Generate journey events based on scenario."""
         events = []
-
         mode_data = DataLoader.get_travel_mode(scenario.mode_id)
         category = mode_data.get("category", "realistic")
 
-        # Seed random for reproducibility
         seed = hash(f"{scenario.origin_id}{scenario.destination_id}{scenario.travel_date}{scenario.mode_id}")
-        random.seed(seed)
+        rng = random.Random(seed)
 
-        # Calculate number of events (1 per month, min 3, max 20)
         travel_days = modified.get("travel_time", {}).get("travel_time_days", 30)
-        num_events = max(3, min(int(travel_days / 30), 20))
+        num_events = max(3, min(int(travel_days / 30), 10))
 
-        # Get appropriate event templates
         templates = SimulationEngine.EVENT_TEMPLATES.get(
             category,
             SimulationEngine.EVENT_TEMPLATES["realistic"]
         )
 
-        # Generate events
         for i in range(num_events):
-            template = random.choice(templates)
+            template = rng.choice(templates)
             events.append(SimulationEvent(
-                day=int((i + 1) * travel_days / num_events),
+                day=int((i + 1) * max(travel_days, 1) / num_events),
                 event=template[0],
                 type=template[1],
                 severity=template[2]
@@ -236,20 +249,14 @@ class SimulationEngine:
         modified: Dict[str, Any],
         events: List[SimulationEvent]
     ) -> str:
-        """Determine mission outcome."""
         mode_data = DataLoader.get_travel_mode(scenario.mode_id)
         failure_rate = mode_data.get("failure_rate", 0.02)
-
-        # Count major events
         major_events = sum(1 for e in events if e.severity == "major")
-
-        # Adjust failure rate based on events
         adjusted_failure = failure_rate + (major_events * 0.05)
 
-        # Seed random for reproducibility
         seed = hash(f"{scenario.origin_id}{scenario.destination_id}{scenario.travel_date}{scenario.mode_id}outcome")
-        random.seed(seed)
-        roll = random.random()
+        rng = random.Random(seed)
+        roll = rng.random()
 
         if roll < adjusted_failure:
             return "failure"
@@ -264,10 +271,7 @@ class SimulationEngine:
         outcome: str,
         scenario: WhatIfScenario
     ) -> List[str]:
-        """Generate lessons learned from the simulation."""
         lessons = []
-
-        # Add outcome-specific lessons
         if outcome == "success":
             lessons.append("Mission parameters were well-optimized")
             lessons.append("Crew training proved effective")
@@ -278,7 +282,6 @@ class SimulationEngine:
             lessons.append("Mission parameters need significant revision")
             lessons.append("Consider alternative travel modes")
 
-        # Add comparison-specific lessons
         if "distance_km" in comparison and comparison["distance_km"].get("changed"):
             diff_pct = comparison["distance_km"].get("difference_percent", 0)
             if diff_pct > 0:
@@ -286,21 +289,14 @@ class SimulationEngine:
             else:
                 lessons.append(f"Shorter distance saved {abs(diff_pct):.1f}% on resources")
 
-        if "cost" in comparison and comparison["cost"].get("changed"):
-            lessons.append("Budget adjustments impacted mission feasibility")
-
-        # Add mode-specific lessons
         mode_data = DataLoader.get_travel_mode(scenario.mode_id)
         category = mode_data.get("category", "realistic")
 
         if category == "human_powered":
             lessons.append("Multi-generational commitment is essential")
-            lessons.append("Consider pack animals for heavy supplies")
         elif category == "absurd":
             lessons.append("Did you really expect this to work?")
-            lessons.append("Sometimes the journey IS the destination")
         elif category == "impossible":
             lessons.append("Physics is more of a guideline than a rule here")
-            lessons.append("Remember: reality is what you make of it")
 
         return lessons

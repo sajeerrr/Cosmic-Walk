@@ -2,12 +2,27 @@ from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 
 
+class MissionModifier(BaseModel):
+    speed_override_km_h: Optional[float] = None
+    active_hours_per_day: Optional[float] = None
+    rest_days_per_week: Optional[float] = None
+    cargo_mass_kg: Optional[float] = None
+    unlimited_food: Optional[bool] = False
+    unlimited_water: Optional[bool] = False
+    unlimited_fuel: Optional[bool] = False
+    no_rest: Optional[bool] = False
+    broken_equipment: Optional[bool] = False
+    random_events_enabled: Optional[bool] = True
+
+
 class MissionRequest(BaseModel):
     origin_id: str
     destination_id: str
     travel_date: str
     mode_id: str
     crew_size: int = 1
+    modifiers: Optional[MissionModifier] = None
+    seed: Optional[int] = None
 
 
 class TravelTimeResult(BaseModel):
@@ -53,6 +68,20 @@ class RidiculousnessAssessment(BaseModel):
     fun_facts: List[str]
 
 
+class MissionVerdict(BaseModel):
+    classification: str  # SENSIBLE, DIFFICULT, EXTREME, ABSURD, IMPOSSIBLE
+    score: float
+    title: str
+    summary: str
+
+
+class ScaleComparisonItem(BaseModel):
+    label: str
+    value: float
+    formatted_value: str
+    unit: str
+
+
 class MissionResult(BaseModel):
     origin: Dict[str, Any]
     destination: Dict[str, Any]
@@ -67,3 +96,6 @@ class MissionResult(BaseModel):
     cost: CostBreakdown
     difficulty: DifficultyAssessment
     ridiculousness: RidiculousnessAssessment
+    verdict: Optional[MissionVerdict] = None
+    scale_comparison: Optional[List[ScaleComparisonItem]] = []
+    events: Optional[List[Dict[str, Any]]] = []

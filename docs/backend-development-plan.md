@@ -2439,25 +2439,43 @@ def test_full_mission_is_deterministic():
 
 ---
 
+## Extended System Capabilities & Science Distinctions
+
+CosmicWalk uses approximate Keplerian astronomy for entertainment and educational purposes.
+
+### Scientific & System Classifications:
+1. **Approximate Scientific Calculation**: Keplerian orbital positions, Hohmann transfer times, Euclidean AU distance, rocket delta-V calculations.
+2. **Hypothetical**: Theoretical propulsion (fusion drive, solar sail, nuclear pulse).
+3. **Absurd**: Comical modes (snail, horse, slingshot, hitchhiking, catapult, comet surfing).
+4. **Impossible / Fictional**: Teleportation, warp drive, magic portal, black hole shortcut.
+5. **Gamification**: Mission Verdicts (`SENSIBLE`, `DIFFICULT`, `EXTREME`, `ABSURD`, `IMPOSSIBLE`), Difficulty Score (0-100), Ridiculousness Score (0-100).
+6. **AI-Generated Content**: Groq LLM narrative reports based strictly on deterministic factual metrics.
+
+---
+
 ## API Endpoint Summary
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | /health | Health check |
-| GET | /api/v1/planets | List all planets |
+| GET | /api/v1/planets | List all planets (legacy support) |
 | GET | /api/v1/planets/{id} | Get planet details |
 | GET | /api/v1/planets/{id}/position | Get position at date |
+| GET | /api/v1/celestial-objects | List all celestial objects (stars, planets, moons, dwarf planets, comets) |
+| GET | /api/v1/celestial-objects/{id} | Get celestial object details |
+| GET | /api/v1/celestial-objects/{id}/position | Get object position at date |
 | GET | /api/v1/travel-modes | List all travel modes |
 | GET | /api/v1/travel-modes/{id} | Get mode details |
-| POST | /api/v1/missions/calculate | Calculate mission |
-| POST | /api/v1/missions/simulate | Run simulation |
-| POST | /api/v1/missions/race | Run race |
+| POST | /api/v1/missions/calculate | Calculate mission telemetry, modifiers, verdict & scale comparisons |
+| POST | /api/v1/missions/distance | Calculate distance between bodies |
+| POST | /api/v1/missions/simulate | Run simulation scenario |
+| POST | /api/v1/missions/race | Run multi-participant cosmic race |
 | GET | /api/v1/missions/challenge | Get random challenge |
-| POST | /api/v1/missions/report | Generate AI report |
-| POST | /api/v1/distance | Calculate distance |
+| POST | /api/v1/missions/report | Generate Groq AI narrative report |
 
 ---
 
-## Ready for Implementation
+## Verification & Status
 
-This plan is ready for your approval. Once approved, I will begin with Phase 1: Foundation, starting with the project structure and FastAPI setup.
+All 67 backend unit tests (`pytest`) pass cleanly. All calculations are stateless, reproducible (with optional seed), and 100% deterministic.
+

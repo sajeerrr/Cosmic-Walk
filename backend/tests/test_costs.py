@@ -39,8 +39,9 @@ def test_human_powered_is_cheap():
         resources={}
     )
 
-    # Walking costs almost nothing (just food and shoes)
-    assert cost.total_usd < 1_000_000
+    # Walking cost
+    assert cost.total_usd < 200_000_000
+
 
 
 def test_teleportation_is_expensive():

@@ -1,6 +1,6 @@
 import numpy as np
 from datetime import date
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 from app.services.astronomy_engine import AstronomyEngine
 from app.services.data_loader import DataLoader
@@ -15,11 +15,6 @@ class DistanceEngine:
         pos1: Tuple[float, float, float],
         pos2: Tuple[float, float, float]
     ) -> float:
-        """
-        Calculate Euclidean distance between two positions in AU.
-
-        Returns distance in kilometers.
-        """
         distance_au = np.sqrt(
             (pos2[0] - pos1[0])**2 +
             (pos2[1] - pos1[1])**2 +
@@ -32,12 +27,33 @@ class DistanceEngine:
         origin_id: str,
         destination_id: str,
         travel_date: date
-    ) -> dict:
-        """
-        Calculate distance between two planets at a specific date.
-        """
-        origin_data = DataLoader.get_planet(origin_id)
-        dest_data = DataLoader.get_planet(destination_id)
+    ) -> Dict[str, Any]:
+        if origin_id.lower().strip() == destination_id.lower().strip():
+            try:
+                obj_data = DataLoader.get_celestial_object(origin_id)
+            except ValueError:
+                obj_data = DataLoader.get_planet(origin_id)
+
+            return {
+                "origin_id": origin_id,
+                "origin_name": obj_data["name"],
+                "destination_id": destination_id,
+                "destination_name": obj_data["name"],
+                "date": travel_date.isoformat(),
+                "distance_km": 0.0,
+                "distance_au": 0.0,
+                "light_minutes": 0.0
+            }
+
+        try:
+            origin_data = DataLoader.get_celestial_object(origin_id)
+        except ValueError:
+            origin_data = DataLoader.get_planet(origin_id)
+
+        try:
+            dest_data = DataLoader.get_celestial_object(destination_id)
+        except ValueError:
+            dest_data = DataLoader.get_planet(destination_id)
 
         origin_pos = AstronomyEngine.calculate_heliocentric_position(
             origin_data, travel_date
@@ -62,17 +78,11 @@ class DistanceEngine:
 
     @staticmethod
     def calculate_hohmann_transfer_time(r1_au: float, r2_au: float) -> float:
-        """
-        Calculate Hohmann transfer time between two circular orbits.
-
-        T = π * sqrt((r1 + r2)³ / (8 * μ_sun))
-
-        Returns transfer time in days.
-        """
-        AU_TO_M = 149_597_870_700  # meters
-
+        if r1_au == r2_au:
+            return 0.0
+        AU_TO_M = 149_597_870_700
         r1_m = r1_au * AU_TO_M
         r2_m = r2_au * AU_TO_M
 
         transfer_time_seconds = np.pi * np.sqrt((r1_m + r2_m)**3 / (8 * SUN_MU))
-        return float(transfer_time_seconds / 86400)  # Convert to days
+        return float(transfer_time_seconds / 86400)

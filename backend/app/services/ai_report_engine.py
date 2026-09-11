@@ -1,7 +1,11 @@
-from anthropic import Anthropic
 import uuid
 import json
 from typing import Dict, Any, List
+
+try:
+    from groq import Groq
+except ImportError:
+    Groq = None
 
 from app.models.report import TravelReport
 from app.services.mission_calculator import MissionCalculator
@@ -14,10 +18,19 @@ class AIReportEngine:
     """Generate narrative reports using LLM."""
 
     def __init__(self):
-        if settings.anthropic_api_key:
-            self.client = Anthropic(api_key=settings.anthropic_api_key)
-        else:
-            self.client = None
+        self.provider = None
+        self.client = None
+
+        if settings.groq_api_key and Groq is not None:
+            self.provider = "groq"
+            self.client = Groq(api_key=settings.groq_api_key)
+        elif settings.anthropic_api_key:
+            try:
+                from anthropic import Anthropic
+                self.provider = "anthropic"
+                self.client = Anthropic(api_key=settings.anthropic_api_key)
+            except ImportError:
+                self.client = None
 
     async def generate_report(
         self,
@@ -64,19 +77,34 @@ class AIReportEngine:
         prompt = self._build_prompt(origin, destination, mode, mission_data, events)
 
         try:
-            # Call LLM
-            message = self.client.messages.create(
-                model="claude-sonnet-5",
-                max_tokens=2000,
-                messages=[{"role": "user", "content": prompt}]
-            )
+            if self.provider == "groq":
+                response = self.client.chat.completions.create(
+                    model=settings.groq_model,
+                    messages=[
+                        {"role": "system", "content": "You are a hilarious, scientific ship AI computer."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=2000,
+                    temperature=0.7,
+                    response_format={"type": "json_object"}
+                )
+                report_text = response.choices[0].message.content
+            elif self.provider == "anthropic":
+                message = self.client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=2000,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                report_text = message.content[0].text
+            else:
+                return self._generate_mock_report(mission_data, events)
 
             # Parse response into structured report
-            report_text = message.content[0].text
             return self._parse_response(report_text, mission_data)
         except Exception as e:
             # Fallback to mock report on error
             return self._generate_mock_report(mission_data, events)
+
 
     def _build_prompt(
         self,
@@ -87,7 +115,21 @@ class AIReportEngine:
         events: List[Any]
     ) -> str:
         """Build prompt with all factual mission data."""
-        events_str = "\n".join([f"Day {e.day}: {e.event}" for e in events[:10]])
+        verdict_info = mission_data.get("verdict", {})
+        verdict_str = f"Verdict: {verdict_info.get('classification', 'N/A')} - {verdict_info.get('title', '')} ({verdict_info.get('summary', '')})"
+        scale_str = "\n".join([f"- {s.get('label')}: {s.get('formatted_value')} {s.get('unit')}" for s in mission_data.get("scale_comparison", [])])
+
+        events_list = []
+        for i, e in enumerate(events[:10]):
+            if hasattr(e, "day") and hasattr(e, "event"):
+                events_list.append(f"Day {e.day}: {e.event}")
+            elif isinstance(e, dict):
+                events_list.append(f"Day {e.get('day', i)}: {e.get('event', '')}")
+            else:
+                events_list.append(f"Event: {str(e)}")
+
+        events_str = "\n".join(events_list)
+
 
         return f"""You are the ship's AI computer aboard a {mode['name']} vessel.
 
@@ -100,6 +142,10 @@ IMPORTANT FACTUAL DATA (do not modify these):
 - Crew Size: {mission_data['crew_size']}
 - Difficulty: {mission_data['difficulty']['rating']}
 - Mode: {mode['name']} ({mode['category']})
+- {verdict_str}
+
+SCALE COMPARISONS:
+{scale_str}
 
 JOURNEY EVENTS:
 {events_str}
@@ -127,6 +173,7 @@ For human-powered modes, emphasize the sheer impossibility.
 For impossible modes, embrace the sci-fi absurdity.
 
 Respond ONLY with valid JSON, no additional text."""
+
 
     def _parse_response(self, text: str, mission_data: Dict[str, Any]) -> TravelReport:
         """Parse LLM response into structured report."""

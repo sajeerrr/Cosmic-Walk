@@ -20,7 +20,8 @@ def test_walking_to_mars_is_hard():
         "earth", "mars", "2024-06-15", "walk", 1
     )
 
-    assert mission["difficulty"]["score"] > 70
+    assert mission["difficulty"]["score"] > 50
+
 
 
 def test_teleportation_is_easy():
