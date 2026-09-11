@@ -198,12 +198,27 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
           <span style={{ fontFamily: SANS, fontWeight: 800, fontSize: "clamp(1.5rem, 4vw, 2.6rem)", color: AMBER }}>{data.destination}</span>
         </div>
 
-        {/* Big travel time */}
-        <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: "clamp(2.2rem, 6vw, 4.5rem)", color: TXT, lineHeight: 1, marginBottom: 10, letterSpacing: "-0.02em" }}>
-          {m.travelTimeHuman || `${fmtNum(m.walkingDurationYears)} yrs`}
-        </div>
-        <div style={{ fontFamily: MONO, fontSize: "0.7rem", letterSpacing: "0.12em", color: TXT3, marginBottom: 20, textTransform: "uppercase" as const }}>
-          Journey Duration
+        {/* Duration & Survival Rate side by side in big font */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap" as const, marginBottom: 20 }}>
+          <div style={{ textAlign: "center" as const }}>
+            <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: "clamp(2.2rem, 6vw, 4.5rem)", color: TXT, lineHeight: 1, marginBottom: 6, letterSpacing: "-0.02em" }}>
+              {m.travelTimeHuman || `${fmtNum(m.walkingDurationYears)} yrs`}
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: "0.65rem", letterSpacing: "0.12em", color: TXT3, textTransform: "uppercase" as const }}>
+              Journey Duration
+            </div>
+          </div>
+
+          <div style={{ width: 1, height: 48, background: BORDER, display: "inline-block" }} />
+
+          <div style={{ textAlign: "center" as const, background: "rgba(239, 68, 68, 0.1)", padding: "12px 24px", borderRadius: "16px", border: "1px solid rgba(239, 68, 68, 0.3)", boxShadow: "0 0 20px rgba(239, 68, 68, 0.15)" }}>
+            <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: "clamp(2.2rem, 6vw, 4.5rem)", color: "#ef4444", lineHeight: 1, marginBottom: 6, letterSpacing: "-0.02em", textShadow: "0 0 12px rgba(239, 68, 68, 0.5)" }}>
+              {`${Math.min(2, Math.max(0, Math.floor(m.survivalProbabilityPercent <= 1 ? m.survivalProbabilityPercent * 2 : (m.survivalProbabilityPercent / 100) * 2)))}%`}
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: "0.65rem", letterSpacing: "0.12em", color: "#f87171", textTransform: "uppercase" as const, fontWeight: 700 }}>
+              Survival Rate
+            </div>
+          </div>
         </div>
 
         {/* Secondary metrics row */}
@@ -221,6 +236,30 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
             </div>
           ))}
         </div>
+      </motion.div>
+
+
+      {/* ══════════════════════════════════════════════════════════════════
+          5. 3D COSMIC ROUTE
+      ══════════════════════════════════════════════════════════════════ */}
+      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+        style={{ borderRadius: 16, overflow: "hidden", border: `1px solid ${BORDER}`, background: VOID, position: "relative" }}>
+        <div style={{ position: "absolute", top: 14, left: 16, zIndex: 20, pointerEvents: "none", display: "flex", alignItems: "center", gap: 8, background: "rgba(7,6,14,0.85)", backdropFilter: "blur(10px)", padding: "5px 14px", borderRadius: 8, border: `1px solid rgba(212,168,83,0.2)` }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: AMBER, display: "inline-block", boxShadow: `0 0 6px ${AMBER}` }} />
+          <span style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.12em", textTransform: "uppercase" as const, color: AMBER }}>
+            {data.origin} ──► {data.destination}
+          </span>
+        </div>
+        <div style={{ position: "absolute", top: 14, right: 16, zIndex: 20, pointerEvents: "none", fontFamily: MONO, fontSize: "0.55rem", color: TXT3, background: "rgba(7,6,14,0.8)", backdropFilter: "blur(8px)", padding: "5px 12px", borderRadius: 8, border: `1px solid ${BORDER}` }}>
+          Cosmic Route
+        </div>
+        <SolarSystem
+          className="w-full h-[380px]"
+          highlightedPlanets={[data.origin, data.destination]}
+          originName={data.origin}
+          destinationName={data.destination}
+          showTrajectory={true}
+        />
       </motion.div>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -321,29 +360,6 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
           </div>
         )}
       </Section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          5. 3D COSMIC ROUTE
-      ══════════════════════════════════════════════════════════════════ */}
-      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-        style={{ borderRadius: 16, overflow: "hidden", border: `1px solid ${BORDER}`, background: VOID, position: "relative" }}>
-        <div style={{ position: "absolute", top: 14, left: 16, zIndex: 20, pointerEvents: "none", display: "flex", alignItems: "center", gap: 8, background: "rgba(7,6,14,0.85)", backdropFilter: "blur(10px)", padding: "5px 14px", borderRadius: 8, border: `1px solid rgba(212,168,83,0.2)` }}>
-          <span style={{ width: 5, height: 5, borderRadius: "50%", background: AMBER, display: "inline-block", boxShadow: `0 0 6px ${AMBER}` }} />
-          <span style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.12em", textTransform: "uppercase" as const, color: AMBER }}>
-            {data.origin} ──► {data.destination}
-          </span>
-        </div>
-        <div style={{ position: "absolute", top: 14, right: 16, zIndex: 20, pointerEvents: "none", fontFamily: MONO, fontSize: "0.55rem", color: TXT3, background: "rgba(7,6,14,0.8)", backdropFilter: "blur(8px)", padding: "5px 12px", borderRadius: 8, border: `1px solid ${BORDER}` }}>
-          Cosmic Route
-        </div>
-        <SolarSystem
-          className="w-full h-[380px]"
-          highlightedPlanets={[data.origin, data.destination]}
-          originName={data.origin}
-          destinationName={data.destination}
-          showTrajectory={true}
-        />
-      </motion.div>
 
       {/* ══════════════════════════════════════════════════════════════════
           6. WHAT YOU'LL NEED (Resources)
