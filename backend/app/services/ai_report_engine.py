@@ -244,6 +244,7 @@ Reference {p_name} by name naturally (2-3 times). Do not invent personal facts a
 === REQUIRED JSON RESPONSE ===
 Return ONLY valid JSON with EXACTLY these fields:
 {{
+  "negative_ai_opinion": "1-2 hilarious, deeply skeptical sentences giving a brutal, funny negative AI review of this trip choice",
   "introduction": "2-3 sentences dramatic intro mentioning {p_name} and the travel mode",
   "what_you_signed_up_for": "2-3 sentences honestly explaining what this journey entails",
   "travel_experience": "2-3 sentences describing the physical/emotional journey experience",
@@ -306,8 +307,17 @@ Respond with ONLY valid JSON. No markdown. No extra text."""
 
         travel_time = mission_data.get("travel_time", {})
 
+        import random
+        mock_opinions = [
+            f"Frankly, attempting to reach {mission_data.get('destination', {}).get('name', 'destination')} via {mission_data.get('mode', {}).get('name', 'this method')} is an insult to 300 years of spaceflight engineering.",
+            f"As an AI, I am programmed to be objective, but this trip plan is objectively terrible and your chances of success are legally zero.",
+            f"If mission control allows {passenger.get('name', 'Commander') if passenger else 'Commander'} to board this mission, I will personally file for software decommissioning out of second-hand embarrassment.",
+            f"This isn't space exploration, this is a multi-generational suicide pact with zero legroom.",
+            f"I calculated 14 million outcomes for this route. You die in 13.99 million of them, and in the rest you run out of snacks."
+        ]
         return TravelReport(
             report_id=str(uuid.uuid4()),
+            negative_ai_opinion=data.get("negative_ai_opinion") or random.choice(mock_opinions),
             introduction=data.get("introduction", ""),
             what_you_signed_up_for=data.get("what_you_signed_up_for", ""),
             travel_experience=data.get("travel_experience", ""),
@@ -409,8 +419,17 @@ Respond with ONLY valid JSON. No markdown. No extra text."""
             ),
         }
 
+        import random
+        mock_opinions = [
+            f"Frankly, attempting to reach {mission_data.get('destination', {}).get('name', 'destination')} via {mission_data.get('mode', {}).get('name', 'this method')} is an insult to 300 years of spaceflight engineering.",
+            f"As an AI, I am programmed to be objective, but this trip plan is objectively terrible and your chances of success are legally zero.",
+            f"If mission control allows {passenger.get('name', 'Commander') if passenger else 'Commander'} to board this mission, I will personally file for software decommissioning out of second-hand embarrassment.",
+            f"This isn't space exploration, this is a multi-generational suicide pact with zero legroom.",
+            f"I calculated 14 million outcomes for this route. You die in 13.99 million of them, and in the rest you run out of snacks."
+        ]
         return TravelReport(
             report_id=str(uuid.uuid4()),
+            negative_ai_opinion=data.get("negative_ai_opinion") or random.choice(mock_opinions),
             introduction=intros.get(category, intros["realistic"]),
             what_you_signed_up_for=signed_up.get(category, signed_up["realistic"]),
             travel_experience=(

@@ -76,10 +76,11 @@ function toPlanetId(name: string): string {
 function toModeId(mode: string): string {
   const map: Record<string, string> = {
     WALKING: "walk",
-    MOONWALK: "run",
     POWER_STRIDE: "run",
-    BAREFOOT: "walk",
-    EVA_SPACEWALK: "walk",
+    bicycle: "bicycle",
+    rowing: "walk",
+    skateboard: "skateboard",
+    horse: "horse",
   };
   return map[mode] || mode.toLowerCase();
 }
@@ -202,6 +203,7 @@ export async function calculateTrip(params: MissionParams): Promise<TripCalculat
 
     const aiReport = {
       // Rich new fields from expanded report
+      negativeAiOpinion:    (r?.negative_ai_opinion as string) ?? "",
       introduction:         (r?.introduction       as string) ?? "",
       whatYouSignedUpFor:   (r?.what_you_signed_up_for as string) ?? "",
       travelExperience:     (r?.travel_experience  as string) ?? "",

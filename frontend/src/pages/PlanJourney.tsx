@@ -20,12 +20,12 @@ const PLANET_INFO: Record<string, { gravity: string; temp: string; terrain: stri
 };
 
 const TRANSPORT_MODES = [
-  { id: "WALKING",          name: "Standard Walk",     speedKmh: 5.0,           icon: "🚶" },
-  { id: "POWER_STRIDE",     name: "Power Stride",      speedKmh: 7.5,           icon: "⚡" },
-  { id: "horse",            name: "Space Stallion",    speedKmh: 49.6,          icon: "🐎" },
-  { id: "skateboard",       name: "Hover Board",       speedKmh: 24.8,          icon: "🛹" },
-  { id: "chemical_rocket",  name: "Chemical Rocket",   speedKmh: 28800.0,       icon: "🚀" },
-  { id: "warp_drive",       name: "Warp Drive",        speedKmh: 1_079_252_848, icon: "✨" },
+  { id: "WALKING",       name: "Walking",       speedKmh: 5.0,  icon: "🚶" },
+  { id: "POWER_STRIDE",  name: "Running",       speedKmh: 12.0, icon: "🏃" },
+  { id: "bicycle",       name: "Cycling",       speedKmh: 20.0, icon: "🚲" },
+  { id: "rowing",        name: "Rowing",        speedKmh: 8.0,  icon: "🚣" },
+  { id: "skateboard",    name: "Skateboarding", speedKmh: 15.0, icon: "🛹" },
+  { id: "horse",         name: "Horse Riding",  speedKmh: 25.0, icon: "🐎" },
 ];
 
 export default function PlanJourney() {

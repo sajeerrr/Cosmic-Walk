@@ -21,10 +21,11 @@ export function generateMockTripResult(params: {
   const distanceAu    = rawDistanceKm / 149_597_870.7;
 
   const speedKmh =
-    params.transportMode === "MOONWALK"      ? 3.2
-    : params.transportMode === "POWER_STRIDE" ? 7.5
-    : params.transportMode === "BAREFOOT"     ? 4.0
-    : params.transportMode === "EVA_SPACEWALK"? 1.2
+    params.transportMode === "POWER_STRIDE"  ? 12.0
+    : params.transportMode === "bicycle"      ? 20.0
+    : params.transportMode === "rowing"       ? 8.0
+    : params.transportMode === "skateboard"   ? 15.0
+    : params.transportMode === "horse"        ? 25.0
     : 5.0;
 
   const activeHoursPerDay = 8;
@@ -67,6 +68,15 @@ export function generateMockTripResult(params: {
     n >= 1_000_000 ? `${(n / 1_000_000).toFixed(2)}M years`
     : n >= 1000     ? `${n.toLocaleString("en-US", { maximumFractionDigits: 0 })} years (${(n / 80).toFixed(0)} human lifetimes)`
     : `${n.toFixed(1)} years`;
+
+  const mockOpinions = [
+    `Frankly, attempting to reach ${destPlanet.name} via ${params.transportMode} is an insult to 300 years of spaceflight engineering.`,
+    `As an AI, I am programmed to be objective, but this trip plan is objectively terrible and your survival odds are legally zero.`,
+    `If mission control allows ${params.passenger.name} to board this mission, I will personally file for software decommissioning out of second-hand embarrassment.`,
+    `This isn't space exploration, this is a multi-generational suicide pact with zero legroom.`,
+    `I calculated 14 million outcomes for this route. You die in 13.99 million of them, and in the rest you run out of snacks.`
+  ];
+  const randomOpinion = mockOpinions[Math.floor(Math.random() * mockOpinions.length)];
 
   return {
     tripId:        `CW-${Math.floor(1000 + Math.random() * 9000)}-${params.origin.substring(0, 3).toUpperCase()}`,
@@ -135,6 +145,7 @@ export function generateMockTripResult(params: {
     ],
 
     aiReport: {
+      negativeAiOpinion: randomOpinion,
       introduction:         `Congratulations, ${params.passenger.name}. You have selected walking as your preferred transportation method to ${params.destination}. This is either extraordinary determination or a profound misunderstanding of interplanetary distances.`,
       whatYouSignedUpFor:   `You have signed up for a ${fmtYears(totalYears)} journey covering ${formatDistance(rawDistanceKm)} on foot. This is approximately ${generationsNeeded.toFixed(0)} human generations. Your descendants may or may not complete this journey.`,
       travelExperience:     `The journey will be characterized by an extraordinary amount of empty space, occasional solar events, and the growing realisation that ${params.destination} is further than it looks on a diagram.`,

@@ -14,6 +14,7 @@ class TravelReport(BaseModel):
     report_id: str
 
     # ── Rich AI narrative sections ──────────────────────────────────────────
+    negative_ai_opinion: str = ""
     introduction: str = ""
     what_you_signed_up_for: str = ""
     travel_experience: str = ""

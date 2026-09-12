@@ -70,6 +70,7 @@ export interface AiTravelReview {
 }
 
 export interface AiMissionReport {
+  negativeAiOpinion?: string;
   // ── Rich new sections ────────────────────────────────────────────────────
   introduction: string;
   whatYouSignedUpFor: string;
