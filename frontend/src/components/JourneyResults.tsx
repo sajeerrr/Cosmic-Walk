@@ -150,6 +150,9 @@ function ResourceCard({ icon, label, value, sub }: { icon: string; label: string
 export default function JourneyResults({ data, onModifyParams }: JourneyResultsProps) {
   const [booked, setBooked] = useState(false);
   const [showAllScales, setShowAllScales] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingStep, setBookingStep] = useState<"processing" | "waiting_list" | "confirmed">("processing");
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   const m = data.metrics;
   const r = data.resources;
@@ -158,6 +161,49 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
   const verdict = data.verdict;
   const catColor = CATEGORY_COLOR[data.modeCategory] ?? AMBER;
   const scales = data.scale_comparison ?? [];
+
+  const startBookingFlow = () => {
+    setIsBookingModalOpen(true);
+    setBookingStep("processing");
+    setTimeout(() => setBookingStep("waiting_list"), 2000);
+    setTimeout(() => {
+      setBookingStep("confirmed");
+      setBooked(true);
+    }, 5000);
+  };
+
+  const downloadTicket = () => {
+    const ticketText = `=====================================================
+            COSMICWALK BOARDING PASS & TICKET
+=====================================================
+PASSENGER: ${data.passenger.name.toUpperCase()}
+AGE: ${data.passenger.age} | HEIGHT: ${data.passenger.heightCm}cm | WEIGHT: ${data.passenger.weightKg}kg
+TRIP ID: ${data.tripId}
+DEPARTURE DATE: ${data.departureDate}
+
+ROUTE: ${data.origin.toUpperCase()} ──► ${data.destination.toUpperCase()}
+MODE: ${data.modeName || data.transportMode} (${data.modeCategory.replace("_", " ").toUpperCase()})
+
+ESTIMATED DURATION: ${data.metrics.travelTimeHuman || data.metrics.walkingDurationYears + " years"}
+DISTANCE: ${data.metrics.distanceKm.toLocaleString()} KM (${data.metrics.distanceAu.toFixed(3)} AU)
+SURVIVAL RATE: ${Math.min(2, Math.max(0, Math.floor(data.metrics.survivalProbabilityPercent <= 1 ? data.metrics.survivalProbabilityPercent * 2 : (data.metrics.survivalProbabilityPercent / 100) * 2)))}%
+
+INSURANCE STATUS: DENIED (Exceeds policy limits)
+VISA STATUS: PENDING (Immigration Inspection Required)
+SPACE CUSTOMS: DECLARED (Food, Water, Oxygen, 1 Suspicious Snail)
+
+ISSUED BY: COSMICWALK INTERPLANETARY AGENCY
+STATUS: BOOKING CONFIRMED & SEAT RESERVED
+=====================================================`;
+
+    const blob = new Blob([ticketText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `CosmicWalk_Ticket_${data.tripId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const downloadJson = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -169,10 +215,6 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} style={{ display: "flex", flexDirection: "column" as const, gap: 20 }}>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          1. HERO HEADER
-      ══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
         style={{ ...AMBER_CARD, padding: "32px 32px 28px", textAlign: "center" as const, position: "relative" }}
@@ -745,19 +787,33 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
         style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 16, padding: "32px 0 8px" }}
       >
         {booked ? (
-          <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: "center" as const }}>
-            <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: "1.6rem", color: AMBER, marginBottom: 10 }}>🚀 Booking Confirmed!</div>
+          <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: "center" as const, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: "1.6rem", color: AMBER, marginBottom: 4 }}>🚀 Booking Confirmed!</div>
             <p style={{ fontFamily: SANS, fontSize: "0.82rem", color: TXT2, lineHeight: 1.65, maxWidth: 440, margin: "0 auto" }}>
               Your interplanetary journey from <strong style={{ color: TXT }}>{data.origin}</strong> to <strong style={{ color: AMBER }}>{data.destination}</strong> has been registered.<br />
               Prepare for departure on {data.departureDate}.
             </p>
-            <p style={{ fontFamily: MONO, fontSize: "0.6rem", color: TXT3, marginTop: 8 }}>Reference: {data.tripId}</p>
+            <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
+              <button
+                onClick={() => setShowTicketModal(true)}
+                style={{ padding: "12px 28px", borderRadius: 10, background: AMBER, color: VOID, fontFamily: SANS, fontWeight: 700, fontSize: "0.85rem", border: "none", cursor: "pointer", boxShadow: "0 0 20px rgba(212,168,83,0.4)" }}
+              >
+                🎫 View & Print Ticket
+              </button>
+              <button
+                onClick={downloadTicket}
+                style={{ padding: "12px 24px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: `1px solid ${AMBER}`, color: AMBER, fontFamily: SANS, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}
+              >
+                ⬇ Download Ticket (.txt)
+              </button>
+            </div>
+            <p style={{ fontFamily: MONO, fontSize: "0.6rem", color: TXT3, marginTop: 4 }}>Reference: {data.tripId}</p>
           </motion.div>
         ) : (
           <>
             <button
               id="btn-book-now"
-              onClick={() => setBooked(true)}
+              onClick={startBookingFlow}
               style={{ padding: "18px 64px", borderRadius: 14, background: AMBER, color: VOID, fontFamily: SANS, fontWeight: 800, fontSize: "1rem", letterSpacing: "0.06em", textTransform: "uppercase" as const, border: "none", cursor: "pointer", boxShadow: `0 0 48px rgba(212,168,83,0.5), 0 8px 28px rgba(0,0,0,0.6)`, transition: "opacity 0.2s, transform 0.15s, box-shadow 0.2s", display: "flex", alignItems: "center", gap: 12 }}
               onMouseOver={(e) => { e.currentTarget.style.opacity = "0.88"; e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseOut={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "translateY(0)"; }}
@@ -791,6 +847,138 @@ export default function JourneyResults({ data, onModifyParams }: JourneyResultsP
           </button>
         </div>
       </motion.div>
+      {/* ══════════════════════════════════════════════════════════════════
+          PROCESSING MODAL WINDOW (5-second journey booking state)
+      ══════════════════════════════════════════════════════════════════ */}
+      {isBookingModalOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(7, 6, 14, 0.88)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ ...AMBER_CARD, width: "100%", maxWidth: 480, padding: 32, textAlign: "center", background: "#0a0814", boxShadow: "0 0 60px rgba(212, 168, 83, 0.2)" }}>
+            {bookingStep === "processing" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                <div style={{ width: 48, height: 48, borderRadius: "50%", border: `3px solid ${AMBER2}`, borderTopColor: AMBER, animation: "spin 1s linear infinite" }} />
+                <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: "1.2rem", color: TXT }}>PROCESSING YOUR JOURNEY</div>
+                <p style={{ fontFamily: MONO, fontSize: "0.7rem", color: TXT3, margin: 0 }}>Connecting with {data.destination} Orbit Control...</p>
+              </div>
+            )}
+
+            {bookingStep === "waiting_list" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                <div style={{ fontSize: "2rem" }}>⏳</div>
+                <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: "1.2rem", color: "#fb923c" }}>YOU ARE IN WAITING LIST</div>
+                <p style={{ fontFamily: SANS, fontSize: "0.8rem", color: TXT2, margin: 0, lineHeight: 1.5 }}>
+                  Position #42 in queue for {data.modeName || data.transportMode}.<br />
+                  Allocating oxygen supplies & shoe inventory...
+                </p>
+              </div>
+            )}
+
+            {bookingStep === "confirmed" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                <div style={{ fontSize: "2.5rem" }}>🎉</div>
+                <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: "1.4rem", color: "#4ade80" }}>BOOKING CONFIRMED!</div>
+                <p style={{ fontFamily: SANS, fontSize: "0.85rem", color: TXT, margin: 0, lineHeight: 1.5 }}>
+                  Here is your official ticket for your journey from <strong style={{ color: AMBER }}>{data.origin}</strong> to <strong style={{ color: AMBER }}>{data.destination}</strong>!
+                </p>
+                <div style={{ display: "flex", gap: 10, marginTop: 8, width: "100%" }}>
+                  <button
+                    onClick={() => { setIsBookingModalOpen(false); setShowTicketModal(true); }}
+                    style={{ flex: 1, padding: "12px", borderRadius: 10, background: AMBER, color: VOID, fontFamily: SANS, fontWeight: 700, fontSize: "0.85rem", border: "none", cursor: "pointer" }}
+                  >
+                    View Ticket
+                  </button>
+                  <button
+                    onClick={() => setIsBookingModalOpen(false)}
+                    style={{ flex: 1, padding: "12px", borderRadius: 10, background: "transparent", border: `1px solid ${BORDER}`, color: TXT3, fontFamily: SANS, fontSize: "0.85rem", cursor: "pointer" }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          INTERPLANETARY TICKET MODAL VIEW
+      ══════════════════════════════════════════════════════════════════ */}
+      {showTicketModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(7, 6, 14, 0.92)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ width: "100%", maxWidth: 640, background: "#0a0814", border: `2px solid ${AMBER}`, borderRadius: 20, overflow: "hidden", boxShadow: "0 0 80px rgba(212, 168, 83, 0.3)", position: "relative" }}>
+            {/* Header */}
+            <div style={{ background: "linear-gradient(135deg, #d4a853 0%, #9a7322 100%)", padding: "20px 24px", color: VOID, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase" }}>COSMICWALK BOARDING PASS</div>
+                <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: "1.3rem" }}>INTERPLANETARY TICKET</div>
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: "0.65rem", background: "rgba(0,0,0,0.2)", padding: "4px 10px", borderRadius: 6, fontWeight: 700 }}>
+                TRIP ID: {data.tripId}
+              </div>
+            </div>
+
+            {/* Ticket Content Body */}
+            <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Route */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", background: "rgba(255,255,255,0.02)", border: `1px solid ${BORDER}`, borderRadius: 12 }}>
+                <div>
+                  <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3 }}>ORIGIN</div>
+                  <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: "1.2rem", color: TXT }}>{data.origin}</div>
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: "1rem", color: AMBER }}>✈ ──►</div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3 }}>DESTINATION</div>
+                  <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: "1.2rem", color: AMBER }}>{data.destination}</div>
+                </div>
+              </div>
+
+              {/* Details Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: "0.8rem", fontFamily: SANS }}>
+                <div style={{ padding: 12, background: "rgba(255,255,255,0.015)", border: `1px solid ${BORDER}`, borderRadius: 8 }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3 }}>PASSENGER</div>
+                  <div style={{ fontWeight: 700, color: TXT }}>{data.passenger.name}</div>
+                  <div style={{ fontSize: "0.7rem", color: TXT3 }}>{data.passenger.age} yrs · {data.passenger.weightKg} kg</div>
+                </div>
+                <div style={{ padding: 12, background: "rgba(255,255,255,0.015)", border: `1px solid ${BORDER}`, borderRadius: 8 }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3 }}>TRAVEL MODE</div>
+                  <div style={{ fontWeight: 700, color: TXT }}>{data.modeName || data.transportMode}</div>
+                  <div style={{ fontSize: "0.7rem", color: TXT3 }}>{data.departureDate}</div>
+                </div>
+                <div style={{ padding: 12, background: "rgba(255,255,255,0.015)", border: `1px solid ${BORDER}`, borderRadius: 8 }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3 }}>DURATION</div>
+                  <div style={{ fontWeight: 700, color: AMBER }}>{data.metrics.travelTimeHuman || `${data.metrics.walkingDurationYears} yrs`}</div>
+                </div>
+                <div style={{ padding: 12, background: "rgba(255,255,255,0.015)", border: `1px solid ${BORDER}`, borderRadius: 8 }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3 }}>SURVIVAL RATE</div>
+                  <div style={{ fontWeight: 700, color: "#f87171" }}>{data.metrics.survivalProbabilityPercent < 0.01 ? `${(data.metrics.survivalProbabilityPercent * 100).toFixed(2)}%` : `${data.metrics.survivalProbabilityPercent.toFixed(0)}%`}</div>
+                </div>
+              </div>
+
+              {/* Status bar */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(74, 222, 128, 0.08)", border: "1px solid rgba(74, 222, 128, 0.2)", borderRadius: 8 }}>
+                <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: "#4ade80", fontWeight: 700 }}>STATUS: SEAT CONFIRMED</span>
+                <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: TXT3 }}>CUSTOMS DECLARED ☑</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div style={{ padding: "16px 24px", borderTop: `1px solid ${BORDER}`, background: "rgba(255,255,255,0.02)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button
+                onClick={downloadTicket}
+                style={{ padding: "10px 20px", borderRadius: 8, background: AMBER, color: VOID, fontFamily: SANS, fontWeight: 700, fontSize: "0.8rem", border: "none", cursor: "pointer" }}
+              >
+                ⬇ Download Ticket (.txt)
+              </button>
+              <button
+                onClick={() => setShowTicketModal(false)}
+                style={{ padding: "10px 20px", borderRadius: 8, background: "transparent", border: `1px solid ${BORDER}`, color: TXT3, fontFamily: SANS, fontSize: "0.8rem", cursor: "pointer" }}
+              >
+                Close Ticket
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }
