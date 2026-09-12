@@ -73,6 +73,16 @@ Explore the results through animated transitions.
     <td align="center">3D Solar System</td>
   </tr>
 </table>
+<table>
+  <tr>
+    <td><img src="screenshots/journey-results.png" width="100%"></td>
+    <td><img src="screenshots/ai-report.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Journey Results</td>
+    <td align="center">AI Cosmic Travel Report</td>
+  </tr>
+</table>
 
 
 ## Team Contributions
