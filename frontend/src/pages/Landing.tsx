@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import SolarSystem from "../components/solar-system/SolarSystem";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [isFullView, setIsFullView] = useState(false);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "calc(100vh - 56px)", minHeight: "600px", overflow: "hidden", background: "#03020a" }}>
@@ -18,11 +20,43 @@ export default function Landing() {
         />
       </div>
 
-      {/* ── Deep vignette overlay ── */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 2,
-        background: "radial-gradient(ellipse at 50% 60%, rgba(3,2,10,0.3) 0%, rgba(3,2,10,0.72) 55%, rgba(3,2,10,0.95) 100%)",
-      }} />
+      {/* ── Exit Full View Button (Shown when in Full 3D Solar System View) ── */}
+      {isFullView && (
+        <div style={{ position: "absolute", top: 24, left: 24, zIndex: 30, display: "flex", gap: 12 }}>
+          <button
+            onClick={() => setIsFullView(false)}
+            style={{
+              padding: "10px 20px", borderRadius: "10px",
+              background: "rgba(7, 6, 14, 0.85)", backdropFilter: "blur(10px)",
+              border: "1px solid rgba(212,168,83,0.4)", color: "#d4a853",
+              fontFamily: "var(--font-sans)", fontSize: "0.75rem", fontWeight: 700,
+              cursor: "pointer", boxShadow: "0 0 20px rgba(0,0,0,0.8)",
+              display: "flex", alignItems: "center", gap: 8
+            }}
+          >
+            ← Exit Full Solar System View
+          </button>
+          <button
+            onClick={() => navigate("/plan")}
+            style={{
+              padding: "10px 20px", borderRadius: "10px",
+              background: "#d4a853", color: "#07060e",
+              fontFamily: "var(--font-sans)", fontSize: "0.75rem", fontWeight: 700,
+              cursor: "pointer", border: "none", boxShadow: "0 0 20px rgba(212,168,83,0.4)"
+            }}
+          >
+            Plan Journey →
+          </button>
+        </div>
+      )}
+
+      {/* ── Deep vignette overlay (hidden in full 3D view mode) ── */}
+      {!isFullView && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 2,
+          background: "radial-gradient(ellipse at 50% 60%, rgba(3,2,10,0.3) 0%, rgba(3,2,10,0.72) 55%, rgba(3,2,10,0.95) 100%)",
+        }} />
+      )}
 
       {/* ── Bottom amber atmospheric glow ── */}
       <div style={{
@@ -62,6 +96,7 @@ export default function Landing() {
       ))}
 
       {/* ── Centered hero content ── */}
+      {!isFullView && (
       <div style={{
         position: "absolute", inset: 0, zIndex: 10,
         display: "flex", flexDirection: "column",
@@ -204,6 +239,7 @@ export default function Landing() {
           {/* Secondary */}
           <button
             id="cta-explore"
+            onClick={() => setIsFullView(true)}
             style={{
               display: "inline-flex", alignItems: "center", gap: "8px",
               padding: "13px 28px",
@@ -234,6 +270,7 @@ export default function Landing() {
           </button>
         </motion.div>
       </div>
+      )}
 
       {/* ── Bottom hint ── */}
       <motion.p
