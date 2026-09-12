@@ -63,20 +63,16 @@ Estimate steps, shoes, snacks, and other unnecessarily important journey require
 Explore the results through animated transitions.
 
 # Screenshots (Add at least 3)
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+### Journey Planner
+![Journey Planner](screenshots/journey-planner.png)
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
-
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+### 3D Solar System
+![3D Solar System](screenshots/solar-system.png)
 
 
 ## Team Contributions
-- [Name 1]: [Specific contributions]
-- [Name 2]: [Specific contributions]
-- [Name 3]: [Specific contributions]
+- Sajeer F M: Backend
+- Vinay S Nair: Frontend
 
 ---
 Made with ❤️ at TinkerHub Useless Projects 
