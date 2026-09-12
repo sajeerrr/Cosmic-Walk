@@ -561,16 +561,22 @@ STATUS: BOOKING CONFIRMED & SEAT RESERVED
           AI OPINION (Funny Negative AI Assessment)
       ══════════════════════════════════════════════════════════════════ */}
       <Section title={<>🤖 AI Mission Control <span style={{ color: "#ef4444", textShadow: "0 0 10px rgba(239,68,68,0.4)", textTransform: "none" }}>Critical Opinion</span></>} amberBorder delay={0.29}>
-        <div style={{ padding: "16px 20px", background: "rgba(239, 68, 68, 0.06)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: 12, display: "flex", gap: 16, alignItems: "flex-start" }}>
-          <span style={{ fontSize: "1.8rem", flexShrink: 0 }}>🤖</span>
-          <div>
-            <div style={{ fontFamily: MONO, fontSize: "0.6rem", color: "#f87171", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 6, textTransform: "none" }}>Official AI System Warning & Unfiltered Assessment</div>
-            <p style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", fontSize: "0.92rem", color: TXT, lineHeight: 1.65, margin: 0, fontStyle: "normal", fontWeight: 400 }}>
-              "{ai.negativeAiOpinion || (
+        <div style={{ padding: "18px 20px", background: "#05040a", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: 12, boxShadow: "inset 0 0 15px rgba(239,68,68,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, paddingBottom: 8, borderBottom: "1px dashed rgba(239, 68, 68, 0.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", display: "inline-block", boxShadow: "0 0 8px #ef4444" }} />
+              <span style={{ fontFamily: MONO, fontSize: "0.62rem", color: "#f87171", letterSpacing: "0.12em", fontWeight: 700, textTransform: "uppercase" }}>[AI-TELEMETRY LOG #779] WARNING & UNFILTERED ASSESSMENT</span>
+            </div>
+            <span style={{ fontFamily: MONO, fontSize: "0.55rem", color: TXT3 }}>PROBABILITY: CRITICAL</span>
+          </div>
+
+          <div style={{ position: "relative", paddingLeft: 16, borderLeft: "3px solid #ef4444", marginTop: 8 }}>
+            <p style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "0.9rem", color: "#fca5a5", lineHeight: 1.6, margin: 0, letterSpacing: "0.01em" }}>
+              {ai.negativeAiOpinion || (
                 data.metrics.walkingDurationYears > 100
                   ? `Attempting to reach ${data.destination} using ${data.modeName || data.transportMode} is an insult to 300 years of spaceflight engineering. I calculated 14 million outcomes—you die in 13.99 million, and in the rest you run out of snacks.`
                   : `As an AI, I am programmed to be objective, but this trip plan is objectively hilarious and your survival odds are essentially rounded down to zero.`
-              )}"
+              )}
             </p>
           </div>
         </div>
