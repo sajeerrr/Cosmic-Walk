@@ -2,8 +2,9 @@
 
 
 
-# CosmicWalk - Interplanetary Planner 🎯
+# CosmicWalk - Interplanetary Planning and Booking Platform
 
+## Demo - [Watch the Demo on YouTube](https://youtu.be/sKuKiTaWlj8)
 
 ## Basic Details
 ### Team Name: Omega
